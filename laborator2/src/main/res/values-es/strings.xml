@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Laboratorio2</string>
+    <string name="text_button">Presione el botón</string>
+    <string name="text_mesaj">Hola!</string>'
+    <string name="text_input">Escribe tu nombre aquí</string>
+    <string name="mesaj_dupa_apasare_buton">Hola, ¡presiona el botón!</string>
+</resources>

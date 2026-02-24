@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Laborator2</string>
+    <string name="text_button">Apasa butonul</string>
+    <string name="text_mesaj">Salut!</string>'
+    <string name="text_input">Scrie-ti numele aici...</string>
+    <string name="mesaj_dupa_apasare_buton">Buna, ai apasat butonul!</string>
+</resources>

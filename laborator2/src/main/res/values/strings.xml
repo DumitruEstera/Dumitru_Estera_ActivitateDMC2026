@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Lab2</string>
+    <string name="text_button">Press the button</string>
+    <string name="text_mesaj">Hello!</string>'
+    <string name="text_input">Write your name here...</string>
+    <string name="mesaj_dupa_apasare_buton">Hi, you press the button!</string>
+</resources>
