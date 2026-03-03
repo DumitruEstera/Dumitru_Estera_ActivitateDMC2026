@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">laborator3</string>
+    <string name="btn_activitate2">Deschide activitatea 3</string>
+    <string name="btn_activitate3">Trimite suma</string>
+    <string name="titluActiv2">Activitate 2</string>
+    <string name="titluActiv3">Activitate 3</string>
+    <string name="btn_back_to_first_activ">Inapoi la activitate 1</string>
+</resources>
