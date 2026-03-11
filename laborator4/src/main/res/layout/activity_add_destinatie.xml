@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AddDestinatieActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textViewNumeDestinatie"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/nume_destinatie_text"
+                android:textSize="18sp"/>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:id="@+id/editTextNumeDestinatie"
+                android:autofillHints="@string/nume_destinatie_hint"
+                android:hint="@string/nume_destinatie_hint" />
+
+            <TextView
+                android:id="@+id/textViewTipDestinatie"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tip_destinatie_text"
+                android:textSize="18sp"/>
+
+            <Spinner
+                android:id="@+id/spinnerTipDestinatie"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="5"
+                android:hint="@string/tip_destinatie_hint"/>
+
+            <TextView
+                android:id="@+id/textViewDistantaDestinatie"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/distanta_text"
+                android:textSize="18sp"/>
+
+            <EditText
+                android:id="@+id/editTextDistantaDestinatie"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="numberDecimal"
+                android:hint="@string/distanta_hint"/>
+
+            <TextView
+                android:id="@+id/textViewVizitat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/vizitat_text"
+                android:textSize="18sp"/>
+
+            <CheckBox
+                android:id="@+id/checkBoxDa"
+                android:layout_width="123dp"
+                android:layout_height="wrap_content"
+                android:text="@string/text_box_da" />
+
+            <TextView
+                android:id="@+id/textViewDurataZile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/durata_text"
+                android:textSize="18sp"/>
+
+
+            <RadioGroup
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <RadioButton
+                    android:id="@+id/radioButton1zi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/radio_button_1zi" />
+                <RadioButton
+                    android:id="@+id/radioButton2zi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/radio_button_2zi" />
+                <RadioButton
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/radioButton3zi"
+                    android:text="@string/radio_button_3zi" />
+                <RadioButton
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/radioButton4zi"
+                    android:text="@string/radio_button_4zi" />
+                <RadioButton
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/radioButton5zi"
+                    android:text="@string/ratio_button_5zi" />
+            </RadioGroup>
+
+
+            <TextView
+                android:id="@+id/textViewRating"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/rating_text"
+                android:textSize="18sp"/>
+
+
+            <RatingBar
+                android:id="@+id/ratingBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:numStars="5"
+                android:stepSize="1" />
+
+            <Switch
+                android:id="@+id/switch1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/switch_text"
+                android:checked="false"
+                tools:ignore="UseSwitchCompatOrMaterialXml"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:id="@+id/textViewToggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/toggle_button_text"
+                android:textSize="18sp"/>
+
+            <ToggleButton
+                android:id="@+id/toggleButton"
+                android:layout_width="167dp"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="@string/toggle_button_text" />
+
+            <Button
+                android:id="@+id/buttonTrimiteDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/button_trimite_date" />
+
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
