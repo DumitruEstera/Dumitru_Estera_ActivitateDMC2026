@@ -1,6 +1,6 @@
 package com.example.laborator4;
 
-import java.io.Serializable;
+import java.io.Serializable;import java.text.SimpleDateFormat;import java.util.Calendar;import java.util.Date;
 
 public class Destinatie implements Serializable {
     private String nume;
@@ -11,10 +11,11 @@ public class Destinatie implements Serializable {
     private TipDestinatie tip;
     private boolean amFostSingur;
     private boolean amInchiriatMasina;
+    private Date dataDestinatiei;
 
     public Destinatie(){}
 
-    public Destinatie(String nume, double distanta, boolean vizitat, int nrZile, float reating, TipDestinatie tip, boolean amInchiriatMasina, boolean amFostSingur){
+    public Destinatie(String nume, double distanta, boolean vizitat, int nrZile, float reating, TipDestinatie tip, boolean amInchiriatMasina, boolean amFostSingur, Date dataDestinatie){
         this.nume = nume;
         this.distanta = distanta;
         this.vizitata = vizitat;
@@ -23,6 +24,7 @@ public class Destinatie implements Serializable {
         this.tip = tip;
         this.amInchiriatMasina = amInchiriatMasina;
         this.amFostSingur = amFostSingur;
+        this.dataDestinatiei = dataDestinatie;
     }
     public String getNume() {return this.nume;}
     public void setNume(String nume) {this.nume = nume;}
@@ -40,10 +42,13 @@ public class Destinatie implements Serializable {
     public void setAmFostSingur(boolean amFostSingur) {this.amFostSingur = amFostSingur;}
     public boolean getAmInchiriatMasina(){return this.amInchiriatMasina;}
     public void setAmInchiriatrMasina(boolean amInchiriatMasina){this.amInchiriatMasina = amInchiriatMasina;}
+    public Date getDataDestinatiei(){ return this.dataDestinatiei; }
+    public void setData(Date dataDestinatiei) { this.dataDestinatiei = dataDestinatiei; }
 
 
     @Override
     public String toString(){
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY");
         return "Destinatie: " + this.nume +
                 "\nDistanta: " + this.distanta +
                 "\nVizitat: " + this.vizitata +
@@ -51,7 +56,8 @@ public class Destinatie implements Serializable {
                 "\nRating: " + this.rating +
                 "\nTip: " + this.tip +
                 "\nAm fost singur:" + this.amFostSingur +
-                "\nAm inchiriat masina: " + this.amInchiriatMasina + "\n";
+                "\nAm inchiriat masina: " + this.amInchiriatMasina +
+                "\nAm fost in data de: " + sdf.format(this.dataDestinatiei) + "\n";
     }
 
 

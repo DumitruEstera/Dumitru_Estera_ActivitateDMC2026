@@ -25,4 +25,4 @@ dependencyResolutionManagement {
 rootProject.name = "Dumitru_Estera_ActivitateDMC2026"
 include(":laborator2")
 include(":laborator3")
-include(":laborator4")
+include(":laborator4_laborator5")

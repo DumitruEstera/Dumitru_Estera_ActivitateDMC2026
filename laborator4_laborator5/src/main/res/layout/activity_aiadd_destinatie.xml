@@ -419,12 +419,15 @@
                         android:layout_height="48dp"
                         android:checked="false"
                         android:text="@string/toggle_button_text"
-                        android:textOn="@string/toggle_button_text"
-                        android:textOff="@string/toggle_button_text"
                         android:background="#E3F2FD"
                         android:textColor="#1565C0"
                         android:textSize="14sp"
                         android:textStyle="bold"/>
+
+                    <DatePicker
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/datePickerDest" />
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>

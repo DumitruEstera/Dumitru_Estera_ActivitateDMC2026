@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -22,23 +23,33 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-public class AIAddDestinatieActivity extends AppCompatActivity {
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+
+
+public class AddDestinatieActivity extends AppCompatActivity {
 
     private EditText editTextNumeDestinatie, editTextDistantaDestinatie;
     private Spinner spinnerTipDestinatie;
     private CheckBox checkBoxDa;
+    private RadioGroup radioGroupDurataZile;
     private RatingBar ratingBar;
     private RadioButton radioButton1zi, radioButton2zi, radioButton3zi, radioButton4zi, radioButton5zi;
     private ToggleButton toggleButton;
     private Button buttonTrimiteDate;
     private Switch switch1;
+    private DatePicker datePickerDest;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_aiadd_destinatie);
+        setContentView(R.layout.activity_add_destinatie);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -58,6 +69,10 @@ public class AIAddDestinatieActivity extends AppCompatActivity {
         switch1 = findViewById(R.id.switch1);
         toggleButton = findViewById(R.id.toggleButton);
         buttonTrimiteDate = findViewById(R.id.buttonTrimiteDate);
+        datePickerDest = findViewById(R.id.datePickerDest);
+
+        Date dd=new Date();
+        datePickerDest.setMaxDate(dd.getTime());
 
         ArrayAdapter<TipDestinatie> adapter = new ArrayAdapter<>(
                 this,
@@ -74,7 +89,7 @@ public class AIAddDestinatieActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Destinatie dest = SalveazaDatele();
                 if(dest != null){
-                    Intent intent = new Intent(AIAddDestinatieActivity.this, MainActivity.class);
+                    Intent intent = new Intent(AddDestinatieActivity.this, MainActivity.class);
                     Bundle bundle = new Bundle();
                     bundle.putSerializable("destinatie", dest);
                     intent.putExtras(bundle);
@@ -110,7 +125,11 @@ public class AIAddDestinatieActivity extends AppCompatActivity {
         boolean amFostSingur = toggleButton.isChecked();
         boolean amInchiriatMasina = switch1.isChecked();
 
-        Destinatie dest = new Destinatie(nume, distanta, vizitat, nrZile, rating, tip, amFostSingur, amInchiriatMasina);
+        Calendar c = new GregorianCalendar(datePickerDest.getYear(), datePickerDest.getMonth(), datePickerDest.getDayOfMonth());
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY");
+        Date date = c.getTime();
+
+        Destinatie dest = new Destinatie(nume, distanta, vizitat, nrZile, rating, tip, amFostSingur, amInchiriatMasina, date);
 
         return  dest;
     }
