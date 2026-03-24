@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">laborator4</string>
+    <string name="nume_destinatie_text">Introduceti numele destinatiei:</string>
+    <string name="nume_destinatie_hint">Nume destinatie</string>
+    <string name="tip_destinatie_text">Ce tip de destinatie este?</string>
+    <string name="tip_destinatie_hint">Tip destinatie</string>
+    <string name="distanta_text">Introduceti distanta pana la destinatie:</string>
+    <string name="distanta_hint">Distanta in km</string>
+    <string name="vizitat_text">Ati mai vizitat pana acum aceasta destinatie?</string>
+    <string name="text_box_da">DA</string>
+    <string name="text_box_nu">NU</string>
+    <string name="durata_text">Cate zile a durat vacanta?</string>
+    <string name="radio_button_1zi">1 zi</string>
+    <string name="radio_button_2zi">2 zile</string>
+    <string name="radio_button_3zi">3 zile</string>
+    <string name="radio_button_4zi">4 zile</string>
+    <string name="ratio_button_5zi">5 zile</string>
+    <string name="rating_text">Ce rating ai da la destinatia?</string>
+    <string name="switch_text">Am mers singur in vacanta.</string>
+    <string name="toggle_button_text">Am inchiriat o masina.</string>
+    <string name="button_trimite_date">Trimite date destinatie</string>
+    <string name="button_adauga_date">Adauga date in interfata mea</string>
+    <string name="text_destinatie_main_view">Destinatie:</string>
+    <string name="text_de_intampinare">Adauga datele destinatiei tale</string>
+    <string name="btn_adauga_date_ai">Adauga date in interfata AI</string>
+
+</resources>

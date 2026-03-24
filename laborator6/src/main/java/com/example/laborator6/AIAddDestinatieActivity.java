@@ -1,4 +1,4 @@
-package com.example.laborator4;
+package com.example.laborator6;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -78,7 +78,8 @@ public class AIAddDestinatieActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTipDestinatie.setAdapter(adapter);
 
-
+        Destinatie destinatieVeche = (Destinatie) getIntent().getSerializableExtra("destinatie");
+        initializeazaActivitate(destinatieVeche);
 
         buttonTrimiteDate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -130,5 +131,40 @@ public class AIAddDestinatieActivity extends AppCompatActivity {
         return  dest;
     }
 
+    private void initializeazaActivitate(Destinatie destinatie){
+        if(destinatie != null){
+            editTextNumeDestinatie.setText(destinatie.getNume());
+            editTextDistantaDestinatie.setText(String.valueOf(destinatie.getDistanta()));
+            checkBoxDa.setChecked(destinatie.getVizitat());
+            ratingBar.setRating(destinatie.getRating());
+            toggleButton.setChecked(destinatie.getAmFostSingur());
+            switch1.setChecked(destinatie.getAmInchiriatMasina());
+            spinnerTipDestinatie.setSelection(destinatie.getTip().ordinal());
+
+            switch(destinatie.getNrZile()){
+                case 1:
+                    radioButton1zi.setChecked(true);
+                    break;
+                case 2:
+                    radioButton2zi.setChecked(true);
+                    break;
+                case 3:
+                    radioButton3zi.setChecked(true);
+                    break;
+                case 4:
+                    radioButton4zi.setChecked(true);
+                    break;
+                case 5:
+                    radioButton5zi.setChecked(true);
+                    break;
+            }
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(destinatie.getDataDestinatiei());
+            datePickerDest.updateDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+
+
+        }
+    }
 
 }

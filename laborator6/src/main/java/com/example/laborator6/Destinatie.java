@@ -1,4 +1,11 @@
-package com.example.laborator4;
+package com.example.laborator6;
+
+import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import java.io.Serializable;import java.text.SimpleDateFormat;import java.util.Calendar;import java.util.Date;
 
@@ -15,7 +22,7 @@ public class Destinatie implements Serializable {
 
     public Destinatie(){}
 
-    public Destinatie(String nume, double distanta, boolean vizitat, int nrZile, float reating, TipDestinatie tip, boolean amInchiriatMasina, boolean amFostSingur, Date dataDestinatie){
+    public Destinatie(String nume, double distanta, boolean vizitat, int nrZile, float reating, TipDestinatie tip, boolean amFostSingur ,boolean amInchiriatMasina, Date dataDestinatie){
         this.nume = nume;
         this.distanta = distanta;
         this.vizitata = vizitat;
@@ -25,6 +32,24 @@ public class Destinatie implements Serializable {
         this.amInchiriatMasina = amInchiriatMasina;
         this.amFostSingur = amFostSingur;
         this.dataDestinatiei = dataDestinatie;
+    }
+
+
+    public int getImage(){
+        switch (this.tip){
+            case PLAJA:
+                return R.drawable.plaja;
+            case MUNTE:
+                return R.drawable.munte;
+            case ORAS:
+                return R.drawable.oras;
+            case RURAL:
+                return R.drawable.rural;
+            case INSULA:
+                return R.drawable.insula;
+            default:
+                return 0;
+        }
     }
     public String getNume() {return this.nume;}
     public void setNume(String nume) {this.nume = nume;}
@@ -59,6 +84,4 @@ public class Destinatie implements Serializable {
                 "\nAm inchiriat masina: " + this.amInchiriatMasina +
                 "\nAm fost in data de: " + sdf.format(this.dataDestinatiei) + "\n";
     }
-
-
 }

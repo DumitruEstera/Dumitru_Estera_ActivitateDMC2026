@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F0F4F8"
+    tools:context=".AddDestinatieActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="24dp">
+
+            <!-- ── HEADER BANNER ── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#1565C0"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="20dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Destinație nouă"
+                        android:textColor="#FFFFFF"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text_de_intampinare"
+                        android:textColor="#BBDEFB"
+                        android:textSize="13sp"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="#1976D2"
+                    android:gravity="center"
+                    android:text="✈"
+                    android:textColor="#FFFFFF"
+                    android:textSize="24sp" />
+            </LinearLayout>
+
+            <!-- ── CARD 1: Informații de bază ── -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="20dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#FFFFFF">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Card Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <View
+                            android:layout_width="4dp"
+                            android:layout_height="22dp"
+                            android:background="#1565C0"
+                            android:layout_marginEnd="10dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Informații generale"
+                            android:textColor="#1565C0"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.05"/>
+                    </LinearLayout>
+
+                    <!-- Nume Destinatie -->
+                    <TextView
+                        android:id="@+id/textViewNumeDestinatie"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/nume_destinatie_text"
+                        android:textColor="#37474F"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp"/>
+
+                    <EditText
+                        android:id="@+id/editTextNumeDestinatie"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:autofillHints="@string/nume_destinatie_hint"
+                        android:hint="@string/nume_destinatie_hint"
+                        android:background="@drawable/edit_text_background"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:textSize="15sp"
+                        android:textColor="#212121"
+                        android:inputType="textCapWords"
+                        android:layout_marginBottom="18dp"/>
+
+                    <!-- Tip Destinatie -->
+                    <TextView
+                        android:id="@+id/textViewTipDestinatie"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tip_destinatie_text"
+                        android:textColor="#37474F"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp"/>
+
+                    <Spinner
+                        android:id="@+id/spinnerTipDestinatie"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:background="@drawable/spinner_background"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:hint="@string/tip_destinatie_hint"/>
+
+                    <!-- Distanta -->
+                    <TextView
+                        android:id="@+id/textViewDistantaDestinatie"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/distanta_text"
+                        android:textColor="#37474F"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="18dp"
+                        android:layout_marginBottom="6dp"/>
+
+                    <EditText
+                        android:id="@+id/editTextDistantaDestinatie"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:ems="10"
+                        android:inputType="numberDecimal"
+                        android:hint="@string/distanta_hint"
+                        android:background="@drawable/edit_text_background"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:textSize="15sp"
+                        android:textColor="#212121"/>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ── CARD 2: Experiența ta ── -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="14dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#FFFFFF">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Card Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <View
+                            android:layout_width="4dp"
+                            android:layout_height="22dp"
+                            android:background="#00897B"
+                            android:layout_marginEnd="10dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Experiența ta"
+                            android:textColor="#00897B"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.05"/>
+                    </LinearLayout>
+
+                    <!-- Vizitat -->
+                    <TextView
+                        android:id="@+id/textViewVizitat"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/vizitat_text"
+                        android:textColor="#37474F"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp"/>
+
+                    <CheckBox
+                        android:id="@+id/checkBoxDa"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text_box_da"
+                        android:textColor="#37474F"
+                        android:textSize="15sp"
+                        android:buttonTint="#1565C0"
+                        android:layout_marginBottom="16dp"/>
+
+                    <!-- Durata -->
+                    <TextView
+                        android:id="@+id/textViewDurataZile"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/durata_text"
+                        android:textColor="#37474F"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="10dp"/>
+
+                    <RadioGroup
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <RadioButton
+                            android:id="@+id/radioButton1zi"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:text="@string/radio_button_1zi"
+                            android:textColor="#37474F"
+                            android:textSize="15sp"
+                            android:buttonTint="#1565C0"
+                            android:paddingStart="8dp"/>
+
+                        <RadioButton
+                            android:id="@+id/radioButton2zi"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:text="@string/radio_button_2zi"
+                            android:textColor="#37474F"
+                            android:textSize="15sp"
+                            android:buttonTint="#1565C0"
+                            android:paddingStart="8dp"/>
+
+                        <RadioButton
+                            android:id="@+id/radioButton3zi"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:text="@string/radio_button_3zi"
+                            android:textColor="#37474F"
+                            android:textSize="15sp"
+                            android:buttonTint="#1565C0"
+                            android:paddingStart="8dp"/>
+
+                        <RadioButton
+                            android:id="@+id/radioButton4zi"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:text="@string/radio_button_4zi"
+                            android:textColor="#37474F"
+                            android:textSize="15sp"
+                            android:buttonTint="#1565C0"
+                            android:paddingStart="8dp"/>
+
+                        <RadioButton
+                            android:id="@+id/radioButton5zi"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:text="@string/ratio_button_5zi"
+                            android:textColor="#37474F"
+                            android:textSize="15sp"
+                            android:buttonTint="#1565C0"
+                            android:paddingStart="8dp"/>
+                    </RadioGroup>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ── CARD 3: Evaluare & detalii ── -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="14dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#FFFFFF">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Card Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <View
+                            android:layout_width="4dp"
+                            android:layout_height="22dp"
+                            android:background="#F57C00"
+                            android:layout_marginEnd="10dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Evaluare și detalii"
+                            android:textColor="#F57C00"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.05"/>
+                    </LinearLayout>
+
+                    <!-- Rating -->
+                    <TextView
+                        android:id="@+id/textViewRating"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/rating_text"
+                        android:textColor="#37474F"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="10dp"/>
+
+                    <RatingBar
+                        android:id="@+id/ratingBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:numStars="5"
+                        android:stepSize="1"
+                        android:progressTint="#F57C00"
+                        android:layout_marginBottom="18dp"/>
+
+                    <!-- Separator -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#ECEFF1"
+                        android:layout_marginBottom="16dp"/>
+
+                    <!-- Switch -->
+                    <Switch
+                        android:id="@+id/switch1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/switch_text"
+                        android:checked="false"
+                        android:textColor="#37474F"
+                        android:textSize="15sp"
+                        android:thumbTint="#1565C0"
+                        android:trackTint="#90CAF9"
+                        tools:ignore="UseSwitchCompatOrMaterialXml"
+                        android:layout_marginBottom="14dp"/>
+
+                    <!-- Separator -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#ECEFF1"
+                        android:layout_marginBottom="16dp"/>
+
+                    <!-- Toggle Button -->
+                    <TextView
+                        android:id="@+id/textViewToggle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/toggle_button_text"
+                        android:textColor="#37474F"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="10dp"/>
+
+                    <ToggleButton
+                        android:id="@+id/toggleButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:checked="false"
+                        android:text="@string/toggle_button_text"
+                        android:background="#E3F2FD"
+                        android:textColor="#1565C0"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+
+                    <DatePicker
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/datePickerDest" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ── BUTON SUBMIT ── -->
+            <Button
+                android:id="@+id/buttonTrimiteDate"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="20dp"
+                android:background="#1565C0"
+                android:text="@string/button_trimite_date"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05"
+                app:cornerRadius="12dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,4 +1,4 @@
-package com.example.laborator4;
+package com.example.laborator6;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -23,16 +23,22 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.drawable.ScaledDrawableWrapper;
+
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
-public class AIAddDestinatieActivity extends AppCompatActivity {
+
+public class AddDestinatieActivity extends AppCompatActivity {
 
     private EditText editTextNumeDestinatie, editTextDistantaDestinatie;
     private Spinner spinnerTipDestinatie;
     private CheckBox checkBoxDa;
+    private RadioGroup radioGroupDurataZile;
     private RatingBar ratingBar;
     private RadioButton radioButton1zi, radioButton2zi, radioButton3zi, radioButton4zi, radioButton5zi;
     private ToggleButton toggleButton;
@@ -45,7 +51,7 @@ public class AIAddDestinatieActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_aiadd_destinatie);
+        setContentView(R.layout.activity_add_destinatie);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -78,6 +84,8 @@ public class AIAddDestinatieActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTipDestinatie.setAdapter(adapter);
 
+        Destinatie destinatieVeche = (Destinatie) getIntent().getSerializableExtra("destinatie");
+        initializeazaActivitate(destinatieVeche);
 
 
         buttonTrimiteDate.setOnClickListener(new View.OnClickListener() {
@@ -85,7 +93,7 @@ public class AIAddDestinatieActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Destinatie dest = SalveazaDatele();
                 if(dest != null){
-                    Intent intent = new Intent(AIAddDestinatieActivity.this, MainActivity.class);
+                    Intent intent = new Intent(AddDestinatieActivity.this, MainActivity.class);
                     Bundle bundle = new Bundle();
                     bundle.putSerializable("destinatie", dest);
                     intent.putExtras(bundle);
@@ -128,6 +136,42 @@ public class AIAddDestinatieActivity extends AppCompatActivity {
         Destinatie dest = new Destinatie(nume, distanta, vizitat, nrZile, rating, tip, amFostSingur, amInchiriatMasina, date);
 
         return  dest;
+    }
+
+    private void initializeazaActivitate(Destinatie destinatie){
+        if(destinatie != null){
+            editTextNumeDestinatie.setText(destinatie.getNume());
+            editTextDistantaDestinatie.setText(String.valueOf(destinatie.getDistanta()));
+            checkBoxDa.setChecked(destinatie.getVizitat());
+            ratingBar.setRating(destinatie.getRating());
+            toggleButton.setChecked(destinatie.getAmFostSingur());
+            switch1.setChecked(destinatie.getAmInchiriatMasina());
+            spinnerTipDestinatie.setSelection(destinatie.getTip().ordinal());
+
+            switch(destinatie.getNrZile()){
+                case 1:
+                    radioButton1zi.setChecked(true);
+                    break;
+                case 2:
+                    radioButton2zi.setChecked(true);
+                    break;
+                case 3:
+                    radioButton3zi.setChecked(true);
+                    break;
+                case 4:
+                    radioButton4zi.setChecked(true);
+                    break;
+                case 5:
+                    radioButton5zi.setChecked(true);
+                    break;
+            }
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(destinatie.getDataDestinatiei());
+            datePickerDest.updateDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+
+
+        }
     }
 
 
