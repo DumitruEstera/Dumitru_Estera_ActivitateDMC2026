@@ -1,15 +1,16 @@
 package com.example.laborator6;
 
-import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 
-import java.io.Serializable;import java.text.SimpleDateFormat;import java.util.Calendar;import java.util.Date;
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-public class Destinatie implements Serializable {
+public class Destinatie implements Parcelable, Serializable {
+    private static final long serialVersionUID = 1L;
     private String nume;
     private double distanta;
     private boolean vizitata;
@@ -22,7 +23,7 @@ public class Destinatie implements Serializable {
 
     public Destinatie(){}
 
-    public Destinatie(String nume, double distanta, boolean vizitat, int nrZile, float reating, TipDestinatie tip, boolean amFostSingur ,boolean amInchiriatMasina, Date dataDestinatie){
+    public Destinatie(String nume, double distanta, boolean vizitat, int nrZile, float reating, TipDestinatie tip, boolean amFostSingur, boolean amInchiriatMasina, Date dataDestinatie){
         this.nume = nume;
         this.distanta = distanta;
         this.vizitata = vizitat;
@@ -34,6 +35,48 @@ public class Destinatie implements Serializable {
         this.dataDestinatiei = dataDestinatie;
     }
 
+    protected Destinatie(Parcel in) {
+        nume = in.readString();
+        distanta = in.readDouble();
+        vizitata = in.readByte() != 0;
+        nrZile = in.readInt();
+        rating = in.readFloat();
+        tip = TipDestinatie.valueOf(in.readString());
+        amFostSingur = in.readByte() != 0;
+        amInchiriatMasina = in.readByte() != 0;
+        long tmpDate = in.readLong();
+        dataDestinatiei = tmpDate == -1 ? null : new Date(tmpDate);
+    }
+
+    public static final Creator<Destinatie> CREATOR = new Creator<Destinatie>() {
+        @Override
+        public Destinatie createFromParcel(Parcel in) {
+            return new Destinatie(in);
+        }
+
+        @Override
+        public Destinatie[] newArray(int size) {
+            return new Destinatie[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString(nume);
+        dest.writeDouble(distanta);
+        dest.writeByte((byte) (vizitata ? 1 : 0));
+        dest.writeInt(nrZile);
+        dest.writeFloat(rating);
+        dest.writeString(tip.name());
+        dest.writeByte((byte) (amFostSingur ? 1 : 0));
+        dest.writeByte((byte) (amInchiriatMasina ? 1 : 0));
+        dest.writeLong(dataDestinatiei != null ? dataDestinatiei.getTime() : -1);
+    }
 
     public int getImage(){
         switch (this.tip){
@@ -51,6 +94,7 @@ public class Destinatie implements Serializable {
                 return 0;
         }
     }
+
     public String getNume() {return this.nume;}
     public void setNume(String nume) {this.nume = nume;}
     public double getDistanta() {return this.distanta;}
@@ -69,7 +113,6 @@ public class Destinatie implements Serializable {
     public void setAmInchiriatrMasina(boolean amInchiriatMasina){this.amInchiriatMasina = amInchiriatMasina;}
     public Date getDataDestinatiei(){ return this.dataDestinatiei; }
     public void setData(Date dataDestinatiei) { this.dataDestinatiei = dataDestinatiei; }
-
 
     @Override
     public String toString(){

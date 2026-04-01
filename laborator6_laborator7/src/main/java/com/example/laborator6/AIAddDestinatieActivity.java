@@ -23,22 +23,21 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.google.android.material.drawable.ScaledDrawableWrapper;
-
-import java.text.DateFormat;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Locale;
 
-
-public class AddDestinatieActivity extends AppCompatActivity {
+public class AIAddDestinatieActivity extends AppCompatActivity {
 
     private EditText editTextNumeDestinatie, editTextDistantaDestinatie;
     private Spinner spinnerTipDestinatie;
     private CheckBox checkBoxDa;
-    private RadioGroup radioGroupDurataZile;
     private RatingBar ratingBar;
     private RadioButton radioButton1zi, radioButton2zi, radioButton3zi, radioButton4zi, radioButton5zi;
     private ToggleButton toggleButton;
@@ -51,7 +50,7 @@ public class AddDestinatieActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_add_destinatie);
+        setContentView(R.layout.activity_aiadd_destinatie);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -84,18 +83,18 @@ public class AddDestinatieActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTipDestinatie.setAdapter(adapter);
 
-        Destinatie destinatieVeche = (Destinatie) getIntent().getSerializableExtra("destinatie");
+        Destinatie destinatieVeche = getIntent().getParcelableExtra("destinatie");
         initializeazaActivitate(destinatieVeche);
-
 
         buttonTrimiteDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Destinatie dest = SalveazaDatele();
+                salveazaInFisier(dest);
                 if(dest != null){
-                    Intent intent = new Intent(AddDestinatieActivity.this, MainActivity.class);
+                    Intent intent = new Intent(AIAddDestinatieActivity.this, MainActivity.class);
                     Bundle bundle = new Bundle();
-                    bundle.putSerializable("destinatie", dest);
+                    bundle.putParcelable("destinatie", dest);
                     intent.putExtras(bundle);
 
                     setResult(RESULT_OK, intent);
@@ -103,6 +102,34 @@ public class AddDestinatieActivity extends AppCompatActivity {
                 }
             }
         });
+
+    }
+
+    private void salveazaInFisier(Destinatie dest){
+        try {
+            File file = new File(getFilesDir(), "fisier_destinatii");
+            boolean exista = file.exists() && file.length() > 0;
+            FileOutputStream fos = new FileOutputStream(file, true);
+            ObjectOutputStream oos;
+            if(exista){
+                oos = new ObjectOutputStream(fos){
+                    @Override
+                    protected void writeStreamHeader() throws IOException {
+                        reset();
+                    }
+                };
+            }else{
+                oos = new ObjectOutputStream(fos);
+            }
+            oos.writeObject(dest);
+            oos.close();
+            fos.close();
+
+        }catch(FileNotFoundException e){
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
 
     }
 
@@ -173,6 +200,5 @@ public class AddDestinatieActivity extends AppCompatActivity {
 
         }
     }
-
 
 }

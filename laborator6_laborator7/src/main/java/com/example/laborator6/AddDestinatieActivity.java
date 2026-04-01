@@ -1,7 +1,10 @@
 package com.example.laborator6;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -23,16 +26,23 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-public class AIAddDestinatieActivity extends AppCompatActivity {
+
+public class AddDestinatieActivity extends AppCompatActivity {
 
     private EditText editTextNumeDestinatie, editTextDistantaDestinatie;
     private Spinner spinnerTipDestinatie;
     private CheckBox checkBoxDa;
+    private RadioGroup radioGroupDurataZile;
     private RatingBar ratingBar;
     private RadioButton radioButton1zi, radioButton2zi, radioButton3zi, radioButton4zi, radioButton5zi;
     private ToggleButton toggleButton;
@@ -45,7 +55,7 @@ public class AIAddDestinatieActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_aiadd_destinatie);
+        setContentView(R.layout.activity_add_destinatie);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -67,6 +77,8 @@ public class AIAddDestinatieActivity extends AppCompatActivity {
         buttonTrimiteDate = findViewById(R.id.buttonTrimiteDate);
         datePickerDest = findViewById(R.id.datePickerDest);
 
+        aplicaPreferinte();
+
         Date dd=new Date();
         datePickerDest.setMaxDate(dd.getTime());
 
@@ -78,17 +90,20 @@ public class AIAddDestinatieActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTipDestinatie.setAdapter(adapter);
 
-        Destinatie destinatieVeche = (Destinatie) getIntent().getSerializableExtra("destinatie");
+        Destinatie destinatieVeche = getIntent().getParcelableExtra("destinatie");
         initializeazaActivitate(destinatieVeche);
+
 
         buttonTrimiteDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Destinatie dest = SalveazaDatele();
+                //SalveazaInFisier(dest);
+                salveazaInFisier(dest);
                 if(dest != null){
-                    Intent intent = new Intent(AIAddDestinatieActivity.this, MainActivity.class);
+                    Intent intent = new Intent(AddDestinatieActivity.this, MainActivity.class);
                     Bundle bundle = new Bundle();
-                    bundle.putSerializable("destinatie", dest);
+                    bundle.putParcelable("destinatie", dest);
                     intent.putExtras(bundle);
 
                     setResult(RESULT_OK, intent);
@@ -98,6 +113,73 @@ public class AIAddDestinatieActivity extends AppCompatActivity {
         });
 
     }
+
+    private void salveazaInFisier(Destinatie dest){
+        try {
+            File file = new File(getFilesDir(), "fisier_destinatii");
+            boolean exista = file.exists() && file.length() > 0;
+            FileOutputStream fos = new FileOutputStream(file, true);
+            ObjectOutputStream oos;
+            if(exista){
+                oos = new ObjectOutputStream(fos){
+                    @Override
+                    protected void writeStreamHeader() throws IOException{
+                        reset();
+                    }
+                };
+            }else{
+                oos = new ObjectOutputStream(fos);
+            }
+            oos.writeObject(dest);
+            oos.close();
+            fos.close();
+
+        }catch(FileNotFoundException e){
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    private void aplicaPreferinte() {
+        SharedPreferences sp = getSharedPreferences("fisier_setari_preferinte", MODE_PRIVATE);
+        String marimeStr = sp.getString("dimensiune_text", "18");
+        String culoareStr = sp.getString("culoare_text", "#000000");
+
+        try {
+            float dimensiune = Float.parseFloat(marimeStr);
+            int culoare = Color.parseColor(culoareStr);
+            editTextNumeDestinatie.setTextSize(dimensiune);
+            editTextNumeDestinatie.setTextColor(culoare);
+
+            editTextDistantaDestinatie.setTextSize(dimensiune);
+            editTextDistantaDestinatie.setTextColor(culoare);
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Eroare la aplicarea preferintelor", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /*
+    private void SalveazaInFisier(Destinatie dest) {
+        try {
+            FileOutputStream fos;
+            fos = openFileOutput("destinatii", MODE_APPEND);
+            Parcel p = Parcel.obtain();
+            dest.writeToParcel(p, 0);
+            byte []vector = p.marshall();
+            fos.write(vector);
+            p.recycle();
+            fos.close();
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+    }
+    */
 
     private Destinatie SalveazaDatele(){
         String nume = editTextNumeDestinatie.getText().toString().trim();
@@ -166,5 +248,6 @@ public class AIAddDestinatieActivity extends AppCompatActivity {
 
         }
     }
+
 
 }

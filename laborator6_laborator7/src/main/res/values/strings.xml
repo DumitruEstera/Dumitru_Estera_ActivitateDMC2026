@@ -23,5 +23,9 @@
     <string name="text_destinatie_main_view">Destinatie:</string>
     <string name="text_de_intampinare">Adauga datele destinatiei tale</string>
     <string name="btn_adauga_date_ai">Adauga date in interfata AI</string>
+    <string name="culoareText">Ce culoare ai vrea pentru text?</string>
+    <string name="marimeText">Ce marine ai vrea sa fie textul?</string>
+    <string name="salveazaPreferinte">Salveaza preferintele</string>
+    <string name="setariPreferinte">Setari Preferinte</string>
 
 </resources>
