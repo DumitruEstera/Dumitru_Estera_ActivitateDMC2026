@@ -1,0 +1,50 @@
+<resources>
+    <string name="app_name">laborator8</string>
+
+    <!-- Butoane principale -->
+    <string name="button_adauga_date">Adauga destinatie noua</string>
+    <string name="button_afiseaza_toate">Afiseaza toate destinatiile</string>
+
+    <!-- Cauta dupa nume (metoda 3) -->
+    <string name="label_cauta_nume">Cauta destinatie dupa nume:</string>
+    <string name="hint_nume">Nume destinatie</string>
+    <string name="button_cauta">Cauta</string>
+
+    <!-- Interval nrZile (metoda 4) -->
+    <string name="label_interval_zile">Filtreaza dupa nr zile (interval):</string>
+    <string name="hint_min">Min</string>
+    <string name="hint_max">Max</string>
+    <string name="button_filtreaza">Filtreaza</string>
+
+    <!-- Stergere dupa distanta (metoda 5) -->
+    <string name="label_sterge_distanta">Sterge destinatii cu distanta mai mare decat:</string>
+    <string name="hint_distanta">Distanta in km</string>
+    <string name="button_sterge">Sterge</string>
+
+    <!-- Creste dupa litera (metoda 6) -->
+    <string name="label_creste_litera">Creste nr zile pentru destinatii care incep cu litera:</string>
+    <string name="hint_litera">Litera</string>
+    <string name="button_creste">Creste</string>
+
+    <!-- Formular adaugare destinatie (reutilizat din laboratoarele anterioare) -->
+    <string name="nume_destinatie_text">Introduceti numele destinatiei:</string>
+    <string name="nume_destinatie_hint">Nume destinatie</string>
+    <string name="tip_destinatie_text">Ce tip de destinatie este?</string>
+    <string name="tip_destinatie_hint">Tip destinatie</string>
+    <string name="distanta_text">Introduceti distanta pana la destinatie:</string>
+    <string name="distanta_hint">Distanta in km</string>
+    <string name="vizitat_text">Ati mai vizitat pana acum aceasta destinatie?</string>
+    <string name="text_box_da">DA</string>
+    <string name="text_box_nu">NU</string>
+    <string name="durata_text">Cate zile a durat vacanta?</string>
+    <string name="radio_button_1zi">1 zi</string>
+    <string name="radio_button_2zi">2 zile</string>
+    <string name="radio_button_3zi">3 zile</string>
+    <string name="radio_button_4zi">4 zile</string>
+    <string name="ratio_button_5zi">5 zile</string>
+    <string name="rating_text">Ce rating ai da la destinatia?</string>
+    <string name="switch_text">Am mers singur in vacanta.</string>
+    <string name="toggle_button_text">Am inchiriat o masina.</string>
+    <string name="button_trimite_date">Trimite date destinatie</string>
+
+</resources>

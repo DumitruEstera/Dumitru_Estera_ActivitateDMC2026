@@ -39,6 +39,7 @@ import java.util.GregorianCalendar;
 
 public class AddDestinatieActivity extends AppCompatActivity {
 
+    private TextView tvNumeDestinatie, tvTipDestinatie, tvDistantaDestinatie, tvVizitat, tvDurataZile, tvRating, tvToggle;
     private EditText editTextNumeDestinatie, editTextDistantaDestinatie;
     private Spinner spinnerTipDestinatie;
     private CheckBox checkBoxDa;
@@ -76,6 +77,13 @@ public class AddDestinatieActivity extends AppCompatActivity {
         toggleButton = findViewById(R.id.toggleButton);
         buttonTrimiteDate = findViewById(R.id.buttonTrimiteDate);
         datePickerDest = findViewById(R.id.datePickerDest);
+        tvNumeDestinatie = findViewById(R.id.textViewNumeDestinatie);
+        tvTipDestinatie = findViewById(R.id.textViewTipDestinatie);
+        tvDistantaDestinatie = findViewById(R.id.textViewDistantaDestinatie);
+        tvVizitat = findViewById(R.id.textViewVizitat);
+        tvDurataZile = findViewById(R.id.textViewDurataZile);
+        tvRating     = findViewById(R.id.textViewRating);
+        tvToggle     = findViewById(R.id.textViewToggle);
 
         aplicaPreferinte();
 
@@ -150,11 +158,59 @@ public class AddDestinatieActivity extends AppCompatActivity {
         try {
             float dimensiune = Float.parseFloat(marimeStr);
             int culoare = Color.parseColor(culoareStr);
+            tvNumeDestinatie.setTextSize(dimensiune);
+            tvNumeDestinatie.setTextColor(culoare);
+
             editTextNumeDestinatie.setTextSize(dimensiune);
             editTextNumeDestinatie.setTextColor(culoare);
 
+            tvTipDestinatie.setTextSize(dimensiune);
+            tvTipDestinatie.setTextColor(culoare);
+
+            tvDistantaDestinatie.setTextSize(dimensiune);
+            tvDistantaDestinatie.setTextColor(culoare);
+
             editTextDistantaDestinatie.setTextSize(dimensiune);
             editTextDistantaDestinatie.setTextColor(culoare);
+
+            tvVizitat.setTextSize(dimensiune);
+            tvVizitat.setTextColor(culoare);
+
+            checkBoxDa.setTextSize(dimensiune);
+            checkBoxDa.setTextColor(culoare);
+
+            tvDurataZile.setTextSize(dimensiune);
+            tvDurataZile.setTextColor(culoare);
+
+            radioButton1zi.setTextSize(dimensiune);
+            radioButton1zi.setTextColor(culoare);
+
+            radioButton2zi.setTextSize(dimensiune);
+            radioButton2zi.setTextColor(culoare);
+
+            radioButton3zi.setTextSize(dimensiune);
+            radioButton3zi.setTextColor(culoare);
+
+            radioButton4zi.setTextSize(dimensiune);
+            radioButton4zi.setTextColor(culoare);
+
+            radioButton5zi.setTextSize(dimensiune);
+            radioButton5zi.setTextColor(culoare);
+
+            tvRating.setTextSize(dimensiune);
+            tvRating.setTextColor(culoare);
+
+            switch1.setTextSize(dimensiune);
+            switch1.setTextColor(culoare);
+
+            tvToggle.setTextSize(dimensiune);
+            tvToggle.setTextColor(culoare);
+
+            toggleButton.setTextSize(dimensiune);
+            toggleButton.setTextColor(culoare);
+
+            buttonTrimiteDate.setTextSize(dimensiune);
+            buttonTrimiteDate.setTextColor(culoare);
 
         } catch (Exception e) {
             Toast.makeText(this, "Eroare la aplicarea preferintelor", Toast.LENGTH_SHORT).show();

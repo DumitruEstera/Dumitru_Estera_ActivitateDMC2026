@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">laborator9</string>
+
+    <!-- MainActivity -->
+    <string name="text_de_intampinare">Galerie destinatii turistice</string>
+    <string name="button_deschide_lista">Deschide lista cu imagini</string>
+
+    <!-- ListaImaginiActivity -->
+    <string name="titlu_lista_imagini">Destinatii turistice</string>
+
+</resources>
