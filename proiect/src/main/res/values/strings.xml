@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Proiect</string>
+    <string name="app_title">SecurityGuard Mobile</string>
+
+    <string name="login_subtitle">Sign in to continue</string>
+    <string name="login_username_hint">Username</string>
+    <string name="login_password_hint">Password</string>
+    <string name="login_button">Login</string>
+    <string name="login_logo_desc">App logo</string>
+    <string name="login_error_empty">Please enter username and password.</string>
+</resources>
