@@ -7,4 +7,9 @@
     <color name="login_title">#FF1A2F4B</color>
     <color name="login_subtitle">#FF6B7A90</color>
     <color name="login_error">#FFD32F2F</color>
+
+    <color name="severity_critical">#FFD32F2F</color>
+    <color name="severity_high">#FFF57C00</color>
+    <color name="severity_medium">#FFFBC02D</color>
+    <color name="severity_low">#FF4CAF50</color>
 </resources>

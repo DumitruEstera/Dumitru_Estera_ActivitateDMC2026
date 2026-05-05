@@ -8,4 +8,78 @@
     <string name="login_button">Login</string>
     <string name="login_logo_desc">App logo</string>
     <string name="login_error_empty">Please enter username and password.</string>
+    <string name="session_expired">Session expired. Please sign in again.</string>
+    <string name="dashboard_logout">Logout</string>
+
+    <string name="dashboard_greeting_fmt">Hello, %1$s</string>
+    <string name="dashboard_subtitle">System overview</string>
+    <string name="dashboard_unresolved">Unresolved Alarms</string>
+    <string name="dashboard_critical">Critical Alerts</string>
+    <string name="dashboard_detections_24h">Detections (24h)</string>
+    <string name="dashboard_persons">Registered Persons</string>
+    <string name="dashboard_recent_alarms">Recent unresolved alarms</string>
+    <string name="dashboard_no_recent_alarms">No unresolved alarms</string>
+    <string name="dashboard_navigate">Navigate</string>
+    <string name="dashboard_btn_alarms">All Alarms</string>
+    <string name="dashboard_btn_persons">Persons</string>
+    <string name="dashboard_btn_map">Camera Map</string>
+    <string name="dashboard_btn_stats">Statistics</string>
+    <string name="dashboard_btn_settings">Settings</string>
+    <string name="dashboard_coming_soon">Coming soon</string>
+    <string name="dashboard_alarm_open_fmt">Alarm #%1$d — detail screen coming soon</string>
+
+    <string name="alarms_title">Alarms</string>
+    <string name="alarms_filter_date">Date</string>
+    <string name="alarms_clear_date">Clear</string>
+    <string name="alarms_date_any">Any date</string>
+    <string name="alarms_date_set_fmt">Date: %1$s</string>
+    <string name="alarms_empty">No alarms found</string>
+    <string name="alarms_load_failed_fmt">Failed to load (HTTP %1$d)</string>
+    <string name="alarms_network_error_fmt">Network error: %1$s</string>
+
+    <string name="detail_title_fmt">Alarm #%1$d</string>
+    <string name="detail_invalid_id">Invalid alarm id</string>
+    <string name="detail_type_suffix">DETECTED</string>
+    <string name="detail_timestamp_fmt">%1$s  •  %2$s</string>
+    <string name="detail_camera_fmt">Camera: %1$s</string>
+    <string name="detail_no_description">(no description)</string>
+    <string name="detail_snapshot_desc">Alarm snapshot</string>
+    <string name="detail_metadata_header">Detection Metadata</string>
+    <string name="detail_rating_header">Local rating</string>
+    <string name="detail_rating_hint">Your assessment (saved on device)</string>
+    <string name="detail_rating_saved">Rating saved</string>
+    <string name="detail_notes_header">Guard notes</string>
+    <string name="detail_notes_hint">Add notes…</string>
+    <string name="detail_save_notes">Save notes</string>
+    <string name="detail_notes_saved">Notes saved</string>
+    <string name="detail_mark_resolved">Mark Resolved</string>
+    <string name="detail_false_alarm">False Alarm</string>
+    <string name="detail_status_updated">Status updated</string>
+
+    <string name="persons_title">Persons</string>
+    <string name="persons_search_hint">Search by name or employee ID</string>
+    <string name="persons_dept_all">Department: All</string>
+    <string name="persons_empty">No persons found</string>
+    <string name="persons_unknown_name">(unnamed)</string>
+    <string name="persons_employee_fmt">ID: %1$s</string>
+    <string name="persons_open_fmt">Person #%1$d — detail screen coming soon</string>
+
+    <string name="person_invalid_id">Invalid person id</string>
+    <string name="person_department_fmt">Department: %1$s</string>
+    <string name="person_face_count_fmt">Face images registered: %1$d</string>
+    <string name="person_favorite_label">Favorite / Watch this person</string>
+    <string name="person_favorite_added">Added to favorites</string>
+    <string name="person_favorite_removed">Removed from favorites</string>
+    <string name="person_zones_header">Authorized zones</string>
+    <string name="person_zones_none">(none)</string>
+    <string name="person_btn_map">Show on Map</string>
+    <string name="person_history_header">Recent access history</string>
+    <string name="person_history_empty">No recent access events</string>
+    <string name="person_map_coming_soon_fmt">Map coming soon — zones: %1$s</string>
+
+    <string name="map_title">Camera Map</string>
+    <string name="map_zones_all">All zones</string>
+    <string name="map_show_zones">Zones</string>
+    <string name="map_show_alarms">Alarms</string>
+    <string name="map_camera_snippet_fmt">Zone: %1$s • %2$s</string>
 </resources>

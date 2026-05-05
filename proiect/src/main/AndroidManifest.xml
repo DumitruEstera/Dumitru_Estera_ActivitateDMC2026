@@ -13,6 +13,10 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.Dumitru_Estera_ActivitateDMC2026">
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_api_key" />
+
         <activity
             android:name=".activities.LoginActivity"
             android:exported="true">
@@ -21,6 +25,38 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".activities.DashboardActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.AlarmsListActivity"
+            android:exported="false"
+            android:label="@string/alarms_title"
+            android:parentActivityName=".activities.DashboardActivity" />
+
+        <activity
+            android:name=".activities.AlarmDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".activities.AlarmsListActivity" />
+
+        <activity
+            android:name=".activities.PersonsListActivity"
+            android:exported="false"
+            android:label="@string/persons_title"
+            android:parentActivityName=".activities.DashboardActivity" />
+
+        <activity
+            android:name=".activities.PersonDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".activities.PersonsListActivity" />
+
+        <activity
+            android:name=".activities.CameraMapActivity"
+            android:exported="false"
+            android:label="@string/map_title"
+            android:parentActivityName=".activities.DashboardActivity" />
 
         <activity
             android:name=".MainActivity"
