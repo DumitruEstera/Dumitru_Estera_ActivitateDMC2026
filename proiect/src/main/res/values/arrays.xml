@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="alarms_status_labels">
+        <item>Status: All</item>
+        <item>Unresolved</item>
+        <item>Resolved</item>
+        <item>False Alarm</item>
+    </string-array>
+
+    <string-array name="alarms_type_labels">
+        <item>Type: All</item>
+        <item>Face</item>
+        <item>Fire</item>
+        <item>Weapon</item>
+        <item>HAR</item>
+        <item>Unauthorized Zone</item>
+    </string-array>
+
+    <string-array name="alarms_severity_labels">
+        <item>Severity: All</item>
+        <item>Critical</item>
+        <item>High</item>
+        <item>Medium</item>
+        <item>Low</item>
+    </string-array>
+
+    <string-array name="stats_window_labels">
+        <item>Last 24h</item>
+        <item>Last 48h</item>
+        <item>Last 7 days</item>
+        <item>Last 30 days</item>
+    </string-array>
+</resources>

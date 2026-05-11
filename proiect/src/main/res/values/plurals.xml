@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="persons_faces_count">
+        <item quantity="one">%d face</item>
+        <item quantity="other">%d faces</item>
+    </plurals>
+</resources>

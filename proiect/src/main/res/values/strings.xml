@@ -30,12 +30,15 @@
 
     <string name="alarms_title">Alarms</string>
     <string name="alarms_filter_date">Date</string>
+    <string name="alarms_filter_time">Hour</string>
     <string name="alarms_clear_date">Clear</string>
     <string name="alarms_date_any">Any date</string>
     <string name="alarms_date_set_fmt">Date: %1$s</string>
+    <string name="alarms_datetime_set_fmt">%1$s @ %2$02d:00 – %2$02d:59</string>
     <string name="alarms_empty">No alarms found</string>
     <string name="alarms_load_failed_fmt">Failed to load (HTTP %1$d)</string>
     <string name="alarms_network_error_fmt">Network error: %1$s</string>
+    <string name="alarms_offline_fmt">Offline — showing cached data (%1$s)</string>
 
     <string name="detail_title_fmt">Alarm #%1$d</string>
     <string name="detail_invalid_id">Invalid alarm id</string>
@@ -82,4 +85,51 @@
     <string name="map_show_zones">Zones</string>
     <string name="map_show_alarms">Alarms</string>
     <string name="map_camera_snippet_fmt">Zone: %1$s • %2$s</string>
+
+    <string name="stats_title">Statistics</string>
+    <string name="stats_window_label">Time window</string>
+    <string name="stats_pick_date">Or pick a specific date</string>
+    <string name="stats_clear_date">Clear date</string>
+    <string name="stats_kpi_detections">Total detections</string>
+    <string name="stats_kpi_alarms">Total alarms</string>
+    <string name="stats_kpi_top_camera">Most active camera</string>
+    <string name="stats_kpi_top_type">Top detection type</string>
+    <string name="stats_line_title">Detections over time</string>
+    <string name="stats_bar_title">Detections per camera</string>
+    <string name="stats_pie_title">Alarm type distribution</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_notif_enabled">Enable notifications</string>
+    <string name="settings_notif_face">Face alerts</string>
+    <string name="settings_notif_fire">Fire alerts</string>
+    <string name="settings_notif_weapon">Weapon alerts</string>
+    <string name="settings_notif_zone">Zone violation alerts</string>
+    <string name="settings_notif_har">HAR alerts</string>
+
+    <string name="settings_display">Display</string>
+    <string name="settings_dark_mode">Dark mode</string>
+    <string name="settings_default_window">Default time window for statistics</string>
+
+    <string name="settings_data">Data</string>
+    <string name="settings_cache_info_fmt">Local cache: %1$d entries in SharedPreferences</string>
+    <string name="settings_clear_cache">Clear local cache</string>
+    <string name="settings_clear_cache_confirm">Remove cached alarm ratings, person favorites, and filter selections?</string>
+    <string name="settings_cache_cleared">Local cache cleared</string>
+    <string name="settings_clear">Clear</string>
+    <string name="settings_cancel">Cancel</string>
+    <string name="settings_save">Save</string>
+
+    <string name="settings_account">Account</string>
+    <string name="settings_role_fmt">Role: %1$s</string>
+    <string name="settings_change_password">Change password</string>
+    <string name="settings_new_password_hint">New password</string>
+    <string name="settings_password_too_short">Password must be at least 4 characters</string>
+    <string name="settings_password_changed">Password updated</string>
+    <string name="settings_password_failed_fmt">Could not change password: %1$s</string>
+    <string name="settings_logout">Logout</string>
+
+    <string name="settings_about">About</string>
+    <string name="settings_version_fmt">Version %1$s</string>
+    <string name="settings_about_blurb">SecurityGuard Mobile — Integrated Security System Companion</string>
 </resources>

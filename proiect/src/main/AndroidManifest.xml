@@ -59,6 +59,18 @@
             android:parentActivityName=".activities.DashboardActivity" />
 
         <activity
+            android:name=".activities.StatisticsActivity"
+            android:exported="false"
+            android:label="@string/stats_title"
+            android:parentActivityName=".activities.DashboardActivity" />
+
+        <activity
+            android:name=".activities.SettingsActivity"
+            android:exported="false"
+            android:label="@string/settings_title"
+            android:parentActivityName=".activities.DashboardActivity" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
     </application>
