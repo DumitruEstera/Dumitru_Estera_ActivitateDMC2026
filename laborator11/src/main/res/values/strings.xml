@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Laborator 11 - PieChart</string>
+    <string name="title_main">Introduceti valorile</string>
+    <string name="label_value">Valoare</string>
+    <string name="label_name">Eticheta</string>
+    <string name="btn_show">Afiseaza graficul</string>
+    <string name="title_chart">Grafic PieChart</string>
+    <string name="error_invalid">Introduceti valori numerice pozitive!</string>
+</resources>
