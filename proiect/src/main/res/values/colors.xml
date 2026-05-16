@@ -3,13 +3,19 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="login_background">#FFF5F7FA</color>
-    <color name="login_title">#FF1A2F4B</color>
-    <color name="login_subtitle">#FF6B7A90</color>
-    <color name="login_error">#FFD32F2F</color>
+    <color name="brand_navy">#FF1A2F4B</color>
+    <color name="brand_navy_dark">#FF13243A</color>
+    <color name="brand_accent">#FFC62828</color>
 
-    <color name="severity_critical">#FFD32F2F</color>
-    <color name="severity_high">#FFF57C00</color>
-    <color name="severity_medium">#FFFBC02D</color>
-    <color name="severity_low">#FF4CAF50</color>
+    <color name="login_background">#FFF3F5F8</color>
+    <color name="login_title">#FF1A2F4B</color>
+    <color name="login_subtitle">#FF5F6B82</color>
+    <color name="login_error">#FFC62828</color>
+
+    <color name="divider">#FFE5E9F0</color>
+
+    <color name="severity_critical">#FFC62828</color>
+    <color name="severity_high">#FFEF6C00</color>
+    <color name="severity_medium">#FFF9A825</color>
+    <color name="severity_low">#FF43A047</color>
 </resources>

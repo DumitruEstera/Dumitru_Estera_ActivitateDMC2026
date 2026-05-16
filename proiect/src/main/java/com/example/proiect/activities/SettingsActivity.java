@@ -22,6 +22,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
+import com.google.android.material.appbar.MaterialToolbar;
+
 import com.example.proiect.R;
 import com.example.proiect.api.ApiClient;
 import com.example.proiect.database.DatabaseHelper;
@@ -54,6 +56,13 @@ public class SettingsActivity extends AppCompatActivity {
         if (!prefs.isLoggedIn()) { finish(); return; }
 
         setContentView(R.layout.activity_settings);
+
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         notifEnabled = findViewById(R.id.settings_notif_enabled);
         notifFace = findViewById(R.id.settings_notif_face);

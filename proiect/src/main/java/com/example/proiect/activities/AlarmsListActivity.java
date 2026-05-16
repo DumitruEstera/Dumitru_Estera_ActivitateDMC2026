@@ -19,6 +19,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.material.appbar.MaterialToolbar;
+
 import com.example.proiect.R;
 import com.example.proiect.adapters.AlarmAdapter;
 import com.example.proiect.api.ApiClient;
@@ -79,6 +81,13 @@ public class AlarmsListActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_alarms_list);
+
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         statusSpinner = findViewById(R.id.alarms_filter_status);
         typeSpinner = findViewById(R.id.alarms_filter_type);

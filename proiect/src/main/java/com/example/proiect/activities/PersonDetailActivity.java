@@ -21,6 +21,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.appbar.MaterialToolbar;
+
 import com.example.proiect.R;
 import com.example.proiect.api.ApiClient;
 import com.example.proiect.database.DatabaseHelper;
@@ -78,6 +80,14 @@ public class PersonDetailActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_person_detail);
+
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
+        setTitle(R.string.persons_title);
 
         nameView = findViewById(R.id.person_name);
         departmentView = findViewById(R.id.person_department);

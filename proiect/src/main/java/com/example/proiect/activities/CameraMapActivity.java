@@ -1,28 +1,24 @@
 package com.example.proiect.activities;
 
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ProgressBar;
-import android.widget.Spinner;
+import android.text.InputType;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.proiect.R;
-import com.example.proiect.api.ApiClient;
 import com.example.proiect.database.DatabaseHelper;
-import com.example.proiect.models.Alarm;
-import com.example.proiect.models.Camera;
-import com.example.proiect.models.Zone;
+import com.example.proiect.models.MapLine;
+import com.example.proiect.models.MapPin;
 import com.example.proiect.utils.PrefsManager;
-import com.example.proiect.utils.Session;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -32,53 +28,51 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polygon;
-import com.google.android.gms.maps.model.PolygonOptions;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class CameraMapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    // Kept for source compatibility with callers that still pass this extra; ignored.
     public static final String EXTRA_FOCUS_ZONES = "focus_zones";
 
-    private static final LatLng MOCK_CENTER = new LatLng(44.4268, 26.1025);
-    private static final double MOCK_SPREAD = 0.004;
+    private static final LatLng DEFAULT_CENTER = new LatLng(44.4268, 26.1025);
+    private static final float HUE_NORMAL = BitmapDescriptorFactory.HUE_AZURE;
+    private static final float HUE_SELECTED = BitmapDescriptorFactory.HUE_YELLOW;
+    private static final int LINE_COLOR = Color.parseColor("#1976D2");
+
+    private enum Mode { ADD, CONNECT, DELETE }
 
     private GoogleMap map;
-    private Spinner zoneSpinner;
-    private Switch zonesSwitch, alarmsSwitch;
-    private ProgressBar progress;
+    private MaterialButtonToggleGroup modeGroup;
+    private TextView hintText;
+    private Switch showLinesSwitch;
+    private Button clearBtn;
 
-    private final List<Camera> cameras = new ArrayList<>();
-    private final List<Zone> zones = new ArrayList<>();
-    private final List<Alarm> unresolvedAlarms = new ArrayList<>();
+    private Mode currentMode = Mode.ADD;
 
-    private final List<Marker> cameraMarkers = new ArrayList<>();
-    private final List<Marker> alarmMarkers = new ArrayList<>();
-    private final List<Polygon> zonePolygons = new ArrayList<>();
+    private final List<MapPin> pins = new ArrayList<>();
+    private final Map<Long, Marker> markersByPinId = new HashMap<>();
 
-    private PrefsManager prefs;
-    private final ExecutorService executor = Executors.newFixedThreadPool(3);
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final List<MapLine> lines = new ArrayList<>();
+    private final Map<Long, Polyline> polylinesByLineId = new HashMap<>();
 
-    private boolean dataLoaded = false;
-    private boolean mapReady = false;
-    private String[] focusZones;
+    private final List<Long> selectedPinIds = new ArrayList<>();
+
+    private DatabaseHelper db;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        prefs = new PrefsManager(this);
+
+        PrefsManager prefs = new PrefsManager(this);
         if (!prefs.isLoggedIn()) {
             finish();
             return;
@@ -86,315 +80,353 @@ public class CameraMapActivity extends AppCompatActivity implements OnMapReadyCa
 
         setContentView(R.layout.activity_camera_map);
 
-        focusZones = getIntent().getStringArrayExtra(EXTRA_FOCUS_ZONES);
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
 
-        zoneSpinner = findViewById(R.id.map_zone_spinner);
-        zonesSwitch = findViewById(R.id.map_switch_zones);
-        alarmsSwitch = findViewById(R.id.map_switch_alarms);
-        progress = findViewById(R.id.map_progress);
+        modeGroup = findViewById(R.id.map_mode_group);
+        hintText = findViewById(R.id.map_hint);
+        showLinesSwitch = findViewById(R.id.map_switch_lines);
+        clearBtn = findViewById(R.id.map_btn_clear);
 
-        zonesSwitch.setOnCheckedChangeListener((b, c) -> applyVisibility());
-        alarmsSwitch.setOnCheckedChangeListener((b, c) -> applyVisibility());
-        zoneSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> p, View v, int pos, long id) {
-                applyVisibility();
-            }
-            @Override public void onNothingSelected(AdapterView<?> p) { }
+        db = DatabaseHelper.get(this);
+        pins.addAll(db.getAllMapPins());
+        lines.addAll(db.getAllMapLines());
+
+        modeGroup.check(R.id.map_mode_add);
+        modeGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) return;
+            if (checkedId == R.id.map_mode_add) setMode(Mode.ADD);
+            else if (checkedId == R.id.map_mode_connect) setMode(Mode.CONNECT);
+            else if (checkedId == R.id.map_mode_delete) setMode(Mode.DELETE);
         });
+
+        showLinesSwitch.setOnCheckedChangeListener((b, checked) -> applyLineVisibility(checked));
+        clearBtn.setOnClickListener(v -> confirmClearAll());
 
         SupportMapFragment frag = (SupportMapFragment)
                 getSupportFragmentManager().findFragmentById(R.id.map_fragment);
         if (frag != null) frag.getMapAsync(this);
-
-        loadData();
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.map = googleMap;
-        this.mapReady = true;
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(MOCK_CENTER, 16f));
-        if (dataLoaded) renderMap();
-    }
 
-    private void loadData() {
-        progress.setVisibility(View.VISIBLE);
-        final String baseUrl = prefs.getServerUrl();
-        final String token = prefs.getAuthToken();
+        map.setOnMapClickListener(this::onMapTapped);
+        map.setOnMarkerClickListener(this::onMarkerClicked);
+        map.setOnPolylineClickListener(this::onPolylineClicked);
 
-        executor.execute(() -> {
-            ApiClient client = new ApiClient(baseUrl, token);
-            final List<Camera> camsLoaded = new ArrayList<>();
-            final List<Zone> zonesLoaded = new ArrayList<>();
-            final List<Alarm> alarmsLoaded = new ArrayList<>();
-            int authCode = 200;
+        renderAllPins();
+        renderAllLines();
 
-            try {
-                ApiClient.ApiResponse r = client.get("/api/cameras-db");
-                if (r.isSuccess()) camsLoaded.addAll(parseCameras(r.body));
-                else if (r.code == 401) authCode = 401;
-            } catch (Exception ignored) { }
-
-            try {
-                ApiClient.ApiResponse r = client.get("/api/zones");
-                if (r.isSuccess()) zonesLoaded.addAll(parseZones(r.body));
-                else if (r.code == 401) authCode = 401;
-            } catch (Exception ignored) { }
-
-            try {
-                ApiClient.ApiResponse r = client.get(
-                        "/api/alarms?status=unresolved&limit=20");
-                if (r.isSuccess()) alarmsLoaded.addAll(parseAlarms(r.body));
-                else if (r.code == 401) authCode = 401;
-            } catch (Exception ignored) { }
-
-            assignMockCoordsIfMissing(camsLoaded);
-            if (!camsLoaded.isEmpty()) {
-                DatabaseHelper.get(this).replaceCameras(camsLoaded);
-            }
-
-            final int finalAuth = authCode;
-            Session.postOrAuth(mainHandler, this, finalAuth, () -> {
-                cameras.clear(); cameras.addAll(camsLoaded);
-                zones.clear(); zones.addAll(zonesLoaded);
-                unresolvedAlarms.clear(); unresolvedAlarms.addAll(alarmsLoaded);
-                rebuildZoneSpinner();
-                progress.setVisibility(View.GONE);
-                dataLoaded = true;
-                if (mapReady) renderMap();
-            });
-        });
-    }
-
-    private void rebuildZoneSpinner() {
-        LinkedHashSet<String> names = new LinkedHashSet<>();
-        for (Zone z : zones) if (z.getName() != null && !z.getName().isEmpty()) names.add(z.getName());
-        for (Camera c : cameras) if (c.getZoneName() != null && !c.getZoneName().isEmpty()) names.add(c.getZoneName());
-
-        List<String> items = new ArrayList<>();
-        items.add(getString(R.string.map_zones_all));
-        items.addAll(names);
-
-        ArrayAdapter<String> a = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, items);
-        a.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        zoneSpinner.setAdapter(a);
-
-        if (focusZones != null && focusZones.length > 0) {
-            int idx = items.indexOf(focusZones[0]);
-            if (idx > 0) zoneSpinner.setSelection(idx);
+        if (pins.isEmpty()) {
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_CENTER, 16f));
+        } else {
+            zoomToPins();
         }
     }
 
-    private void renderMap() {
+    // ---------- Mode handling ----------
+
+    private void setMode(Mode mode) {
+        currentMode = mode;
+        clearSelection();
+        switch (mode) {
+            case ADD:     hintText.setText(R.string.map_hint_add); break;
+            case CONNECT: hintText.setText(R.string.map_hint_connect); break;
+            case DELETE:  hintText.setText(R.string.map_hint_delete); break;
+        }
+    }
+
+    // ---------- Map / marker / line taps ----------
+
+    private void onMapTapped(LatLng latLng) {
+        if (currentMode == Mode.ADD) {
+            promptForNewPin(latLng);
+        }
+    }
+
+    private boolean onMarkerClicked(Marker marker) {
+        Object tag = marker.getTag();
+        if (!(tag instanceof Long)) return false;
+        long pinId = (Long) tag;
+
+        switch (currentMode) {
+            case CONNECT:
+                togglePinSelection(pinId);
+                return true;
+            case DELETE:
+                confirmDeletePin(pinId, marker);
+                return true;
+            case ADD:
+            default:
+                // Consume so we don't auto-pan/open info window in Add mode.
+                return true;
+        }
+    }
+
+    private void onPolylineClicked(Polyline polyline) {
+        if (currentMode != Mode.DELETE) return;
+        Object tag = polyline.getTag();
+        if (!(tag instanceof Long)) return;
+        confirmDeleteLine((Long) tag);
+    }
+
+    // ---------- Connect mode ----------
+
+    private void togglePinSelection(long pinId) {
+        if (selectedPinIds.contains(pinId)) {
+            selectedPinIds.remove(Long.valueOf(pinId));
+            setMarkerSelected(pinId, false);
+            return;
+        }
+        if (selectedPinIds.size() >= 2) clearSelection();
+
+        selectedPinIds.add(pinId);
+        setMarkerSelected(pinId, true);
+
+        if (selectedPinIds.size() == 1) {
+            Toast.makeText(this, R.string.map_pick_second, Toast.LENGTH_SHORT).show();
+        } else if (selectedPinIds.size() == 2) {
+            createLineBetweenSelected();
+        }
+    }
+
+    private void createLineBetweenSelected() {
+        if (selectedPinIds.size() != 2) return;
+        long a = selectedPinIds.get(0);
+        long b = selectedPinIds.get(1);
+
+        if (lineExistsBetween(a, b)) {
+            Toast.makeText(this, R.string.map_line_exists, Toast.LENGTH_SHORT).show();
+            clearSelection();
+            return;
+        }
+
+        long id = db.insertMapLine(a, b);
+        if (id < 0) { clearSelection(); return; }
+        MapLine line = new MapLine(id, a, b, System.currentTimeMillis());
+        lines.add(line);
+        addPolylineForLine(line);
+        Toast.makeText(this, R.string.map_line_drawn, Toast.LENGTH_SHORT).show();
+        clearSelection();
+    }
+
+    private boolean lineExistsBetween(long a, long b) {
+        for (MapLine ln : lines) {
+            if ((ln.getPinAId() == a && ln.getPinBId() == b)
+                    || (ln.getPinAId() == b && ln.getPinBId() == a)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void clearSelection() {
+        for (long id : selectedPinIds) setMarkerSelected(id, false);
+        selectedPinIds.clear();
+    }
+
+    private void setMarkerSelected(long pinId, boolean selected) {
+        Marker m = markersByPinId.get(pinId);
+        if (m == null) return;
+        m.setIcon(BitmapDescriptorFactory.defaultMarker(selected ? HUE_SELECTED : HUE_NORMAL));
+    }
+
+    // ---------- Visibility ----------
+
+    private void applyLineVisibility(boolean visible) {
+        for (Polyline p : polylinesByLineId.values()) p.setVisible(visible);
+    }
+
+    // ---------- Pin / line deletion ----------
+
+    private void confirmDeletePin(long pinId, Marker marker) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.map_delete)
+                .setMessage(marker.getTitle())
+                .setPositiveButton(R.string.map_delete, (d, w) -> deletePin(pinId, marker))
+                .setNegativeButton(R.string.map_cancel, null)
+                .show();
+    }
+
+    private void deletePin(long pinId, Marker marker) {
+        // Drop any lines that reference this pin (DB + map).
+        db.deleteLinesForPin(pinId);
+        List<Long> doomedLineIds = new ArrayList<>();
+        for (MapLine ln : lines) {
+            if (ln.getPinAId() == pinId || ln.getPinBId() == pinId) {
+                doomedLineIds.add(ln.getId());
+            }
+        }
+        for (Long lid : doomedLineIds) {
+            Polyline p = polylinesByLineId.remove(lid);
+            if (p != null) p.remove();
+            for (int i = 0; i < lines.size(); i++) {
+                if (lines.get(i).getId() == lid) { lines.remove(i); break; }
+            }
+        }
+
+        db.deleteMapPin(pinId);
+        marker.remove();
+        markersByPinId.remove(pinId);
+        for (int i = 0; i < pins.size(); i++) {
+            if (pins.get(i).getId() == pinId) { pins.remove(i); break; }
+        }
+        selectedPinIds.remove(Long.valueOf(pinId));
+        Toast.makeText(this, R.string.map_pin_deleted, Toast.LENGTH_SHORT).show();
+    }
+
+    private void confirmDeleteLine(long lineId) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.map_line_delete_title)
+                .setPositiveButton(R.string.map_delete, (d, w) -> deleteLine(lineId))
+                .setNegativeButton(R.string.map_cancel, null)
+                .show();
+    }
+
+    private void deleteLine(long lineId) {
+        db.deleteMapLine(lineId);
+        Polyline p = polylinesByLineId.remove(lineId);
+        if (p != null) p.remove();
+        for (int i = 0; i < lines.size(); i++) {
+            if (lines.get(i).getId() == lineId) { lines.remove(i); break; }
+        }
+        Toast.makeText(this, R.string.map_line_deleted, Toast.LENGTH_SHORT).show();
+    }
+
+    private void confirmClearAll() {
+        if (pins.isEmpty() && lines.isEmpty()) return;
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.map_clear_pins)
+                .setMessage(R.string.map_confirm_clear)
+                .setPositiveButton(R.string.map_delete, (d, w) -> clearAllPins())
+                .setNegativeButton(R.string.map_cancel, null)
+                .show();
+    }
+
+    private void clearAllPins() {
+        db.clearMapLines();
+        db.clearMapPins();
+
+        for (Polyline p : polylinesByLineId.values()) p.remove();
+        polylinesByLineId.clear();
+        lines.clear();
+
+        for (Marker m : markersByPinId.values()) m.remove();
+        markersByPinId.clear();
+        pins.clear();
+
+        selectedPinIds.clear();
+        Toast.makeText(this, R.string.map_pins_cleared, Toast.LENGTH_SHORT).show();
+    }
+
+    // ---------- Pin creation ----------
+
+    private void promptForNewPin(LatLng latLng) {
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setHint(R.string.map_new_pin_hint);
+        input.setText(getString(R.string.map_pin_default_name, pins.size() + 1));
+        input.setSelection(input.getText().length());
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.map_new_pin_title)
+                .setView(input)
+                .setPositiveButton(R.string.map_save, (DialogInterface d, int which) -> {
+                    String label = input.getText().toString().trim();
+                    if (label.isEmpty()) {
+                        label = getString(R.string.map_pin_default_name, pins.size() + 1);
+                    }
+                    savePin(label, latLng);
+                })
+                .setNegativeButton(R.string.map_cancel, null)
+                .show();
+    }
+
+    private void savePin(String label, LatLng latLng) {
+        MapPin pin = new MapPin();
+        pin.setLabel(label);
+        pin.setLatitude(latLng.latitude);
+        pin.setLongitude(latLng.longitude);
+        pin.setCreatedAt(System.currentTimeMillis());
+
+        long id = db.insertMapPin(pin);
+        if (id < 0) return;
+        pin.setId(id);
+        pins.add(pin);
+        addMarkerForPin(pin);
+        Toast.makeText(this, R.string.map_pin_saved, Toast.LENGTH_SHORT).show();
+    }
+
+    // ---------- Rendering ----------
+
+    private void renderAllPins() {
         if (map == null) return;
-        clearOverlays();
-
-        for (Camera c : cameras) {
-            if (!c.hasCoordinates()) continue;
-            float hue = c.isRestricted()
-                    ? BitmapDescriptorFactory.HUE_RED
-                    : BitmapDescriptorFactory.HUE_GREEN;
-            Marker m = map.addMarker(new MarkerOptions()
-                    .position(new LatLng(c.getLatitude(), c.getLongitude()))
-                    .title(c.getName())
-                    .snippet(getString(R.string.map_camera_snippet_fmt,
-                            c.getZoneName() == null || c.getZoneName().isEmpty() ? "—" : c.getZoneName(),
-                            c.getLocation() == null || c.getLocation().isEmpty() ? "—" : c.getLocation()))
-                    .icon(BitmapDescriptorFactory.defaultMarker(hue)));
-            if (m != null) {
-                m.setTag(c);
-                cameraMarkers.add(m);
-            }
-        }
-
-        for (Zone z : zones) {
-            if (z.getPolygon() == null || z.getPolygon().size() < 3) continue;
-            int stroke = z.isRestricted() ? Color.parseColor("#D32F2F")
-                                          : Color.parseColor("#1976D2");
-            int fill = z.isRestricted() ? Color.argb(60, 211, 47, 47)
-                                        : Color.argb(50, 25, 118, 210);
-            Polygon p = map.addPolygon(new PolygonOptions()
-                    .addAll(z.getPolygon())
-                    .strokeColor(stroke)
-                    .fillColor(fill)
-                    .strokeWidth(3));
-            if (p != null) {
-                p.setTag(z);
-                zonePolygons.add(p);
-            }
-        }
-
-        Map<String, Camera> byId = new HashMap<>();
-        for (Camera c : cameras) byId.put(c.getCameraId(), c);
-        for (Alarm a : unresolvedAlarms) {
-            Camera c = byId.get(a.getCameraId());
-            if (c == null || !c.hasCoordinates()) continue;
-            Marker m = map.addMarker(new MarkerOptions()
-                    .position(new LatLng(c.getLatitude(), c.getLongitude()))
-                    .title((a.getType() == null ? "" : a.getType().toUpperCase(Locale.US))
-                            + " — " + (a.getSeverity() == null ? "" : a.getSeverity()))
-                    .snippet(a.getDescription() == null ? "" : a.getDescription())
-                    .icon(BitmapDescriptorFactory.defaultMarker(
-                            BitmapDescriptorFactory.HUE_ROSE)));
-            if (m != null) {
-                m.setTag(a);
-                alarmMarkers.add(m);
-            }
-        }
-
-        applyVisibility();
-        zoomToContent();
-
-        map.setOnInfoWindowClickListener(marker -> {
-            Object tag = marker.getTag();
-            if (tag instanceof Alarm) {
-                Alarm a = (Alarm) tag;
-                android.content.Intent intent = new android.content.Intent(
-                        this, AlarmDetailActivity.class);
-                intent.putExtra(AlarmDetailActivity.EXTRA_ALARM_ID, a.getId());
-                startActivity(intent);
-            }
-        });
+        for (Marker m : markersByPinId.values()) m.remove();
+        markersByPinId.clear();
+        for (MapPin pin : pins) addMarkerForPin(pin);
     }
 
-    private void applyVisibility() {
+    private void renderAllLines() {
         if (map == null) return;
+        for (Polyline p : polylinesByLineId.values()) p.remove();
+        polylinesByLineId.clear();
+        for (MapLine ln : lines) addPolylineForLine(ln);
+    }
 
-        String selected = (String) zoneSpinner.getSelectedItem();
-        boolean filterAll = selected == null || getString(R.string.map_zones_all).equals(selected);
-
-        boolean showZones = zonesSwitch.isChecked();
-        for (Polygon p : zonePolygons) {
-            Zone z = (Zone) p.getTag();
-            boolean inFilter = filterAll
-                    || (z != null && selected.equalsIgnoreCase(z.getName()));
-            p.setVisible(showZones && inFilter);
-        }
-
-        for (Marker m : cameraMarkers) {
-            Camera c = (Camera) m.getTag();
-            boolean inFilter = filterAll
-                    || (c != null && c.getZoneName() != null
-                        && selected.equalsIgnoreCase(c.getZoneName()));
-            m.setVisible(inFilter);
-        }
-
-        boolean showAlarms = alarmsSwitch.isChecked();
-        for (Marker m : alarmMarkers) {
-            Alarm a = (Alarm) m.getTag();
-            Camera c = a == null ? null : findCamera(a.getCameraId());
-            boolean inFilter = filterAll
-                    || (c != null && c.getZoneName() != null
-                        && selected.equalsIgnoreCase(c.getZoneName()));
-            m.setVisible(showAlarms && inFilter);
+    private void addMarkerForPin(MapPin pin) {
+        if (map == null) return;
+        Marker m = map.addMarker(new MarkerOptions()
+                .position(new LatLng(pin.getLatitude(), pin.getLongitude()))
+                .title(pin.getLabel())
+                .icon(BitmapDescriptorFactory.defaultMarker(HUE_NORMAL)));
+        if (m != null) {
+            m.setTag(pin.getId());
+            markersByPinId.put(pin.getId(), m);
         }
     }
 
-    private Camera findCamera(String id) {
-        if (id == null) return null;
-        for (Camera c : cameras) if (id.equals(c.getCameraId())) return c;
+    private void addPolylineForLine(MapLine line) {
+        if (map == null) return;
+        MapPin a = findPin(line.getPinAId());
+        MapPin b = findPin(line.getPinBId());
+        if (a == null || b == null) return;
+
+        Polyline p = map.addPolyline(new PolylineOptions()
+                .add(new LatLng(a.getLatitude(), a.getLongitude()))
+                .add(new LatLng(b.getLatitude(), b.getLongitude()))
+                .color(LINE_COLOR)
+                .width(6f)
+                .clickable(true));
+        if (p != null) {
+            p.setTag(line.getId());
+            p.setVisible(showLinesSwitch.isChecked());
+            polylinesByLineId.put(line.getId(), p);
+        }
+    }
+
+    private MapPin findPin(long id) {
+        for (MapPin p : pins) if (p.getId() == id) return p;
         return null;
     }
 
-    private void zoomToContent() {
+    private void zoomToPins() {
+        if (map == null || pins.isEmpty()) return;
+        if (pins.size() == 1) {
+            MapPin only = pins.get(0);
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                    new LatLng(only.getLatitude(), only.getLongitude()), 16f));
+            return;
+        }
         LatLngBounds.Builder b = new LatLngBounds.Builder();
-        boolean any = false;
-        for (Camera c : cameras) {
-            if (c.hasCoordinates()) {
-                b.include(new LatLng(c.getLatitude(), c.getLongitude()));
-                any = true;
-            }
-        }
-        for (Zone z : zones) {
-            for (LatLng p : z.getPolygon()) {
-                b.include(p);
-                any = true;
-            }
-        }
-        if (any) {
-            try {
-                map.animateCamera(CameraUpdateFactory.newLatLngBounds(b.build(), 120));
-            } catch (Exception ignored) { }
-        }
-    }
-
-    private void clearOverlays() {
-        for (Marker m : cameraMarkers) m.remove();
-        for (Marker m : alarmMarkers) m.remove();
-        for (Polygon p : zonePolygons) p.remove();
-        cameraMarkers.clear();
-        alarmMarkers.clear();
-        zonePolygons.clear();
-    }
-
-    private static void assignMockCoordsIfMissing(List<Camera> list) {
-        boolean anyMissing = false;
-        for (Camera c : list) if (!c.hasCoordinates()) { anyMissing = true; break; }
-        if (!anyMissing) return;
-        int idx = 0;
-        for (Camera c : list) {
-            if (c.hasCoordinates()) continue;
-            double angle = (idx * 137.508) * Math.PI / 180.0;
-            double radius = MOCK_SPREAD * (0.4 + (idx % 4) * 0.2);
-            c.setLatitude(MOCK_CENTER.latitude + Math.cos(angle) * radius);
-            c.setLongitude(MOCK_CENTER.longitude + Math.sin(angle) * radius);
-            c.setHasCoordinates(true);
-            idx++;
-        }
-    }
-
-    private static List<Camera> parseCameras(String body) {
-        List<Camera> out = new ArrayList<>();
+        for (MapPin pin : pins) b.include(new LatLng(pin.getLatitude(), pin.getLongitude()));
         try {
-            JSONArray arr = extractArray(body, "cameras", "data", "results");
-            if (arr == null) return out;
-            for (int i = 0; i < arr.length(); i++) {
-                out.add(Camera.fromJson(arr.getJSONObject(i)));
-            }
+            map.animateCamera(CameraUpdateFactory.newLatLngBounds(b.build(), 120));
         } catch (Exception ignored) { }
-        return out;
-    }
-
-    private static List<Zone> parseZones(String body) {
-        List<Zone> out = new ArrayList<>();
-        try {
-            JSONArray arr = extractArray(body, "zones", "data", "results");
-            if (arr == null) return out;
-            for (int i = 0; i < arr.length(); i++) {
-                out.add(Zone.fromJson(arr.getJSONObject(i)));
-            }
-        } catch (Exception ignored) { }
-        return out;
-    }
-
-    private static List<Alarm> parseAlarms(String body) {
-        List<Alarm> out = new ArrayList<>();
-        try {
-            JSONArray arr = extractArray(body, "alarms", "data", "results");
-            if (arr == null) return out;
-            for (int i = 0; i < arr.length(); i++) {
-                out.add(Alarm.fromJson(arr.getJSONObject(i)));
-            }
-        } catch (Exception ignored) { }
-        return out;
-    }
-
-    private static JSONArray extractArray(String body, String... keys) throws Exception {
-        if (body == null || body.isEmpty()) return null;
-        String trimmed = body.trim();
-        if (trimmed.startsWith("[")) return new JSONArray(trimmed);
-        JSONObject obj = new JSONObject(trimmed);
-        for (String k : keys) {
-            if (obj.has(k) && obj.optJSONArray(k) != null) return obj.getJSONArray(k);
-        }
-        return null;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        executor.shutdownNow();
     }
 }

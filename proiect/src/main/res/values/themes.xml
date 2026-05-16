@@ -1,9 +1,17 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.Dumitru_Estera_ActivitateDMC2026" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:windowBackground">@color/login_background</item>
+        <item name="android:statusBarColor">@color/brand_navy_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 
     <style name="Theme.Dumitru_Estera_ActivitateDMC2026" parent="Base.Theme.Dumitru_Estera_ActivitateDMC2026" />
+
+    <style name="AppToolbar" parent="Widget.MaterialComponents.Toolbar">
+        <item name="android:background">@color/brand_navy</item>
+        <item name="titleTextColor">@color/white</item>
+        <item name="subtitleTextColor">#CFD8E3</item>
+        <item name="navigationIconTint">@color/white</item>
+        <item name="android:elevation">3dp</item>
+    </style>
 </resources>

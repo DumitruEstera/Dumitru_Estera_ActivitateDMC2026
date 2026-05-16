@@ -27,7 +27,7 @@ public class PrefsManager {
     public static final String KEY_DARK_MODE = "dark_mode";
     public static final String KEY_DEFAULT_TIME_WINDOW = "default_time_window";
 
-    public static final String DEFAULT_SERVER_URL = "http://10.0.2.2:8000";
+    public static final String DEFAULT_SERVER_URL = "http://192.168.1.5:8000";
 
     private final SharedPreferences prefs;
 

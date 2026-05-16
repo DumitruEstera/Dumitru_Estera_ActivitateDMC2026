@@ -9,6 +9,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.example.proiect.models.AccessLogEntry;
 import com.example.proiect.models.Alarm;
 import com.example.proiect.models.Camera;
+import com.example.proiect.models.MapLine;
+import com.example.proiect.models.MapPin;
 import com.example.proiect.models.Person;
 
 import org.json.JSONArray;
@@ -21,12 +23,14 @@ import java.util.Map;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static final String DB_NAME = "securityguard_cache.db";
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 3;
 
     public static final String T_ALARMS = "alarms";
     public static final String T_PERSONS = "persons";
     public static final String T_LOGS = "access_logs";
     public static final String T_CAMERAS = "cameras";
+    public static final String T_MAP_PINS = "map_pins";
+    public static final String T_MAP_LINES = "map_lines";
 
     private static DatabaseHelper instance;
 
@@ -85,11 +89,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "zone_id INTEGER,"
                 + "zone_name TEXT,"
                 + "is_restricted INTEGER DEFAULT 0)");
+
+        db.execSQL("CREATE TABLE " + T_MAP_PINS + " ("
+                + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "label TEXT,"
+                + "latitude REAL,"
+                + "longitude REAL,"
+                + "created_at INTEGER)");
+
+        db.execSQL("CREATE TABLE " + T_MAP_LINES + " ("
+                + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "pin_a INTEGER,"
+                + "pin_b INTEGER,"
+                + "created_at INTEGER)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        for (String t : new String[] { T_ALARMS, T_PERSONS, T_LOGS, T_CAMERAS }) {
+        for (String t : new String[] { T_ALARMS, T_PERSONS, T_LOGS, T_CAMERAS, T_MAP_PINS, T_MAP_LINES }) {
             db.execSQL("DROP TABLE IF EXISTS " + t);
         }
         onCreate(db);
@@ -99,7 +116,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
-            for (String t : new String[] { T_ALARMS, T_PERSONS, T_LOGS, T_CAMERAS }) {
+            for (String t : new String[] { T_ALARMS, T_PERSONS, T_LOGS, T_CAMERAS, T_MAP_PINS, T_MAP_LINES }) {
                 db.delete(t, null, null);
             }
             db.setTransactionSuccessful();
@@ -341,6 +358,95 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         } finally {
             db.endTransaction();
         }
+    }
+
+    // ---------- Map pins ----------
+
+    public synchronized long insertMapPin(MapPin pin) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("label", pin.getLabel());
+        cv.put("latitude", pin.getLatitude());
+        cv.put("longitude", pin.getLongitude());
+        cv.put("created_at",
+                pin.getCreatedAt() == 0 ? System.currentTimeMillis() : pin.getCreatedAt());
+        return db.insert(T_MAP_PINS, null, cv);
+    }
+
+    public synchronized List<MapPin> getAllMapPins() {
+        SQLiteDatabase db = getReadableDatabase();
+        List<MapPin> out = new ArrayList<>();
+        Cursor c = db.rawQuery(
+                "SELECT id, label, latitude, longitude, created_at FROM "
+                        + T_MAP_PINS + " ORDER BY created_at ASC, id ASC", null);
+        try {
+            while (c.moveToNext()) {
+                out.add(new MapPin(
+                        c.getLong(0),
+                        c.getString(1),
+                        c.getDouble(2),
+                        c.getDouble(3),
+                        c.getLong(4)));
+            }
+        } finally { c.close(); }
+        return out;
+    }
+
+    public synchronized void deleteMapPin(long id) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(T_MAP_PINS, "id=?", new String[] { String.valueOf(id) });
+    }
+
+    public synchronized void clearMapPins() {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(T_MAP_PINS, null, null);
+    }
+
+    public synchronized long insertMapLine(long pinA, long pinB) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("pin_a", pinA);
+        cv.put("pin_b", pinB);
+        cv.put("created_at", System.currentTimeMillis());
+        return db.insert(T_MAP_LINES, null, cv);
+    }
+
+    public synchronized List<MapLine> getAllMapLines() {
+        SQLiteDatabase db = getReadableDatabase();
+        List<MapLine> out = new ArrayList<>();
+        Cursor c = db.rawQuery(
+                "SELECT id, pin_a, pin_b, created_at FROM " + T_MAP_LINES
+                        + " ORDER BY created_at ASC, id ASC", null);
+        try {
+            while (c.moveToNext()) {
+                out.add(new MapLine(c.getLong(0), c.getLong(1), c.getLong(2), c.getLong(3)));
+            }
+        } finally { c.close(); }
+        return out;
+    }
+
+    public synchronized void deleteMapLine(long id) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(T_MAP_LINES, "id=?", new String[] { String.valueOf(id) });
+    }
+
+    public synchronized void deleteLinesForPin(long pinId) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(T_MAP_LINES, "pin_a=? OR pin_b=?",
+                new String[] { String.valueOf(pinId), String.valueOf(pinId) });
+    }
+
+    public synchronized void clearMapLines() {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(T_MAP_LINES, null, null);
+    }
+
+    public synchronized int countMapPins() {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT COUNT(*) FROM " + T_MAP_PINS, null);
+        try {
+            return c.moveToFirst() ? c.getInt(0) : 0;
+        } finally { c.close(); }
     }
 
     // ---------- helpers ----------

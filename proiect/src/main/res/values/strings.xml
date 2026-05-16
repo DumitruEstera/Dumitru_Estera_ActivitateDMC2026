@@ -11,7 +11,7 @@
     <string name="session_expired">Session expired. Please sign in again.</string>
     <string name="dashboard_logout">Logout</string>
 
-    <string name="dashboard_greeting_fmt">Hello, %1$s</string>
+    <string name="dashboard_greeting_fmt">Welcome back, %1$s</string>
     <string name="dashboard_subtitle">System overview</string>
     <string name="dashboard_unresolved">Unresolved Alarms</string>
     <string name="dashboard_critical">Critical Alerts</string>
@@ -85,6 +85,32 @@
     <string name="map_show_zones">Zones</string>
     <string name="map_show_alarms">Alarms</string>
     <string name="map_camera_snippet_fmt">Zone: %1$s • %2$s</string>
+    <string name="map_hint">Long-press the map to add a camera pin</string>
+    <string name="map_draw_lines">Draw lines between cameras</string>
+    <string name="map_pick_first">Tap a camera to start the line</string>
+    <string name="map_pick_second">Tap a second camera to finish the line</string>
+    <string name="map_line_drawn">Line drawn</string>
+    <string name="map_line_exists">A line already connects these two pins</string>
+    <string name="map_line_delete_title">Delete this line?</string>
+    <string name="map_line_deleted">Line deleted</string>
+    <string name="map_show_lines">Show lines</string>
+    <string name="map_mode_add">Add</string>
+    <string name="map_mode_connect">Connect</string>
+    <string name="map_mode_delete">Delete</string>
+    <string name="map_hint_add">Tap the map to add a camera pin</string>
+    <string name="map_hint_connect">Tap two camera pins to connect them</string>
+    <string name="map_hint_delete">Tap a pin or a line to delete it</string>
+    <string name="map_clear_pins">Clear all pins</string>
+    <string name="map_new_pin_title">New camera pin</string>
+    <string name="map_new_pin_hint">Camera name</string>
+    <string name="map_save">Save</string>
+    <string name="map_cancel">Cancel</string>
+    <string name="map_delete">Delete</string>
+    <string name="map_confirm_clear">Remove all camera pins?</string>
+    <string name="map_pin_default_name">Camera %1$d</string>
+    <string name="map_pin_saved">Camera pin saved</string>
+    <string name="map_pin_deleted">Camera pin deleted</string>
+    <string name="map_pins_cleared">All pins cleared</string>
 
     <string name="stats_title">Statistics</string>
     <string name="stats_window_label">Time window</string>

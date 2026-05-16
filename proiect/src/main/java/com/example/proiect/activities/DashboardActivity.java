@@ -13,6 +13,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.appbar.MaterialToolbar;
+
 import com.example.proiect.R;
 import com.example.proiect.adapters.AlarmAdapter;
 import com.example.proiect.api.ApiClient;
@@ -55,6 +57,9 @@ public class DashboardActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_dashboard);
+
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         greeting = findViewById(R.id.dashboard_greeting);
         kpiUnresolved = findViewById(R.id.dashboard_kpi_unresolved);

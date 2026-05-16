@@ -17,6 +17,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.appbar.MaterialToolbar;
+
 import com.example.proiect.R;
 import com.example.proiect.adapters.PersonAdapter;
 import com.example.proiect.api.ApiClient;
@@ -61,6 +63,13 @@ public class PersonsListActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_persons_list);
+
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         searchInput = findViewById(R.id.persons_search);
         deptSpinner = findViewById(R.id.persons_dept_spinner);
