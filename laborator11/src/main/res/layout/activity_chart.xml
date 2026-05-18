@@ -9,6 +9,7 @@
     tools:context=".ChartActivity">
 
     <TextView
+        android:id="@+id/tvChartTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/title_chart"
@@ -17,9 +18,33 @@
         android:gravity="center"
         android:layout_marginBottom="8dp" />
 
-    <com.example.laborator11.PieChartView
-        android:id="@+id/pieChart"
+    <Spinner
+        android:id="@+id/spinnerChartType"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.example.laborator11.PieChartView
+            android:id="@+id/pieChart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.example.laborator11.ColumnChartView
+            android:id="@+id/columnChart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <com.example.laborator11.BarChartView
+            android:id="@+id/barChart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
 </LinearLayout>

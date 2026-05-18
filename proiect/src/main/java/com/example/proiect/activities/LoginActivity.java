@@ -12,6 +12,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.proiect.R;
 import com.example.proiect.api.ApiClient;
@@ -54,6 +56,17 @@ public class LoginActivity extends AppCompatActivity {
         errorText = findViewById(R.id.login_error);
 
         loginButton.setOnClickListener(v -> attemptLogin());
+
+        // pentru a nu acoperi butoanele cu tastatura
+        View loginRoot = findViewById(R.id.login_root);
+        ViewCompat.setOnApplyWindowInsetsListener(loginRoot, (v, insets) -> {
+            int bottom = insets.getInsets(
+                    WindowInsetsCompat.Type.ime()
+                            | WindowInsetsCompat.Type.systemBars()).bottom;
+            int top = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top;
+            v.setPadding(v.getPaddingLeft(), top, v.getPaddingRight(), bottom);
+            return insets;
+        });
     }
 
     private void attemptLogin() {
@@ -83,15 +96,17 @@ public class LoginActivity extends AppCompatActivity {
                     JSONObject json = resp.asJson();
                     String token = json.optString("token",
                             json.optString("access_token", null));
-                    String role = json.optString("role",
-                            json.optString("user_role", ""));
+                    JSONObject userObj = json.optJSONObject("user");
+                    String role = (userObj != null) ? userObj.optString("role", "user") : "user";
+                    String fullName = (userObj != null) ? userObj.optString("full_name", "") : "";
+                    int userId = (userObj != null) ? userObj.optInt("id", -1) : -1;
 
                     if (token == null || token.isEmpty()) {
                         postError("Invalid server response (no token).");
                         return;
                     }
 
-                    prefs.saveLogin(token, username, role);
+                    prefs.saveLogin(token, username, role, fullName, userId);
                     mainHandler.post(() -> {
                         setLoading(false);
                         goToDashboard();

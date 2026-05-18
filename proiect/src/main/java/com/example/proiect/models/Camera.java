@@ -50,8 +50,4 @@ public class Camera {
     public int getZoneId() { return zoneId; }
     public String getZoneName() { return zoneName; }
     public boolean isRestricted() { return isRestricted; }
-
-    public void setLatitude(double latitude) { this.latitude = latitude; }
-    public void setLongitude(double longitude) { this.longitude = longitude; }
-    public void setHasCoordinates(boolean v) { this.hasCoordinates = v; }
 }

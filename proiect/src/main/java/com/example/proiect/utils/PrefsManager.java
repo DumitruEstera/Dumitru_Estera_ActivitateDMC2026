@@ -10,6 +10,8 @@ public class PrefsManager {
     public static final String KEY_AUTH_TOKEN = "auth_token";
     public static final String KEY_USERNAME = "username";
     public static final String KEY_USER_ROLE = "user_role";
+    public static final String KEY_FULL_NAME = "full_name";
+    public static final String KEY_USER_ID = "user_id";
     public static final String KEY_SERVER_URL = "server_url";
 
     public static final String KEY_FILTER_STATUS = "filter_status";
@@ -25,7 +27,6 @@ public class PrefsManager {
     public static final String KEY_NOTIF_ZONE = "notif_zone";
     public static final String KEY_NOTIF_HAR = "notif_har";
     public static final String KEY_DARK_MODE = "dark_mode";
-    public static final String KEY_DEFAULT_TIME_WINDOW = "default_time_window";
 
     public static final String DEFAULT_SERVER_URL = "http://192.168.1.5:8000";
 
@@ -54,11 +55,29 @@ public class PrefsManager {
     }
 
     public void saveLogin(String token, String username, String role) {
+        saveLogin(token, username, role, "", -1);
+    }
+
+    public void saveLogin(String token, String username, String role, String fullName) {
+        saveLogin(token, username, role, fullName, -1);
+    }
+
+    public void saveLogin(String token, String username, String role, String fullName, int userId) {
         prefs.edit()
                 .putString(KEY_AUTH_TOKEN, token)
                 .putString(KEY_USERNAME, username)
                 .putString(KEY_USER_ROLE, role)
+                .putString(KEY_FULL_NAME, fullName)
+                .putInt(KEY_USER_ID, userId)
                 .apply();
+    }
+
+    public String getFullName() {
+        return prefs.getString(KEY_FULL_NAME, "");
+    }
+
+    public int getUserId() {
+        return prefs.getInt(KEY_USER_ID, -1);
     }
 
     public String getUsername() {
@@ -105,14 +124,6 @@ public class PrefsManager {
         prefs.edit().putBoolean(key, value).apply();
     }
 
-    public int getDefaultTimeWindow() {
-        return prefs.getInt(KEY_DEFAULT_TIME_WINDOW, 24);
-    }
-
-    public void setDefaultTimeWindow(int hours) {
-        prefs.edit().putInt(KEY_DEFAULT_TIME_WINDOW, hours).apply();
-    }
-
     public void clearCachedData() {
         SharedPreferences.Editor e = prefs.edit();
         for (String key : new java.util.ArrayList<>(prefs.getAll().keySet())) {
@@ -139,6 +150,8 @@ public class PrefsManager {
                 .remove(KEY_AUTH_TOKEN)
                 .remove(KEY_USERNAME)
                 .remove(KEY_USER_ROLE)
+                .remove(KEY_FULL_NAME)
+                .remove(KEY_USER_ID)
                 .apply();
     }
 }

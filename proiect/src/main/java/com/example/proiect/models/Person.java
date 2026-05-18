@@ -19,10 +19,11 @@ public class Person {
     public static Person fromJson(JSONObject json) throws JSONException {
         Person p = new Person();
         p.id = json.optInt("id", 0);
-        p.name = json.optString("name", "");
-        p.department = json.optString("department", "");
-        p.employeeId = json.optString("employee_id",
-                json.optString("employeeId", ""));
+        p.name = optStringOrEmpty(json, "name");
+        p.department = optStringOrEmpty(json, "department");
+        p.employeeId = json.isNull("employee_id")
+                ? optStringOrEmpty(json, "employeeId")
+                : json.optString("employee_id", "");
         p.faceCount = json.optInt("face_count",
                 json.optInt("faces_count",
                         json.optInt("faces", 0)));
@@ -42,6 +43,11 @@ public class Person {
             }
         }
         return p;
+    }
+
+    private static String optStringOrEmpty(JSONObject json, String key) {
+        if (json.isNull(key)) return "";
+        return json.optString(key, "");
     }
 
     public int getId() { return id; }

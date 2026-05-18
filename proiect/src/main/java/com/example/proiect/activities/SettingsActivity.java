@@ -5,14 +5,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.InputType;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,17 +33,16 @@ import java.util.concurrent.Executors;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    private static final int[] WINDOW_HOURS = { 24, 48, 168, 720 };
-
     private Switch notifEnabled, darkMode;
     private CheckBox notifFace, notifFire, notifWeapon, notifZone, notifHar;
-    private Spinner windowSpinner;
     private TextView cacheInfo, usernameView, roleView, versionView;
-    private Button clearCacheBtn, passwordBtn, logoutBtn;
+    private EditText serverUrlInput;
+    private Button clearCacheBtn, passwordBtn, logoutBtn, saveUrlBtn;
 
     private PrefsManager prefs;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private volatile ApiClient activeClient;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -71,7 +66,6 @@ public class SettingsActivity extends AppCompatActivity {
         notifZone = findViewById(R.id.settings_notif_zone);
         notifHar = findViewById(R.id.settings_notif_har);
         darkMode = findViewById(R.id.settings_dark_mode);
-        windowSpinner = findViewById(R.id.settings_default_window);
         cacheInfo = findViewById(R.id.settings_cache_info);
         usernameView = findViewById(R.id.settings_username);
         roleView = findViewById(R.id.settings_role);
@@ -79,6 +73,8 @@ public class SettingsActivity extends AppCompatActivity {
         clearCacheBtn = findViewById(R.id.settings_btn_clear_cache);
         passwordBtn = findViewById(R.id.settings_btn_password);
         logoutBtn = findViewById(R.id.settings_btn_logout);
+        serverUrlInput = findViewById(R.id.settings_server_url);
+        saveUrlBtn = findViewById(R.id.settings_btn_save_url);
 
         bindNotifications();
         bindDisplay();
@@ -129,25 +125,6 @@ public class SettingsActivity extends AppCompatActivity {
                     ? AppCompatDelegate.MODE_NIGHT_YES
                     : AppCompatDelegate.MODE_NIGHT_NO);
         });
-
-        ArrayAdapter<CharSequence> a = ArrayAdapter.createFromResource(this,
-                R.array.stats_window_labels, android.R.layout.simple_spinner_item);
-        a.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        windowSpinner.setAdapter(a);
-
-        int currentHours = prefs.getDefaultTimeWindow();
-        int idx = 0;
-        for (int i = 0; i < WINDOW_HOURS.length; i++) {
-            if (WINDOW_HOURS[i] == currentHours) { idx = i; break; }
-        }
-        windowSpinner.setSelection(idx);
-        windowSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> p, View v, int pos, long id) {
-                prefs.setDefaultTimeWindow(WINDOW_HOURS[pos]);
-            }
-            @Override public void onNothingSelected(AdapterView<?> p) { }
-        });
     }
 
     private void bindData() {
@@ -169,9 +146,9 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void updateCacheInfo() {
-        int entries = getSharedPreferences(PrefsManager.PREFS_NAME, MODE_PRIVATE)
-                .getAll().size();
-        cacheInfo.setText(getString(R.string.settings_cache_info_fmt, entries));
+        DatabaseHelper db = DatabaseHelper.get(this);
+        int rows = db.countAlarms() + db.countPersons() + db.countAccessLogs();
+        cacheInfo.setText(getString(R.string.settings_cache_info_fmt, rows));
     }
 
     private void bindAccount() {
@@ -183,6 +160,21 @@ public class SettingsActivity extends AppCompatActivity {
 
         passwordBtn.setOnClickListener(v -> showChangePasswordDialog());
         logoutBtn.setOnClickListener(v -> Session.logout(this));
+
+        serverUrlInput.setText(prefs.getServerUrl());
+        saveUrlBtn.setOnClickListener(v -> {
+            String url = serverUrlInput.getText().toString().trim();
+            if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                Toast.makeText(this, R.string.settings_server_url_invalid,
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+            while (url.endsWith("/")) url = url.substring(0, url.length() - 1);
+            prefs.setServerUrl(url);
+            serverUrlInput.setText(url);
+            Toast.makeText(this, R.string.settings_server_url_saved,
+                    Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void bindAbout() {
@@ -227,6 +219,7 @@ public class SettingsActivity extends AppCompatActivity {
             String error = null;
             try {
                 ApiClient client = new ApiClient(baseUrl, token);
+                activeClient = client;
                 JSONObject body = new JSONObject();
                 body.put("new_password", newPassword);
                 ApiClient.ApiResponse r = client.put("/api/users/me/password", body);
@@ -263,6 +256,8 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        ApiClient c = activeClient;
+        if (c != null) c.cancel();
         executor.shutdownNow();
     }
 }

@@ -245,6 +245,14 @@
                 android:text="@string/dashboard_btn_persons" />
 
             <Button
+                android:id="@+id/dashboard_btn_live"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="@string/dashboard_btn_live" />
+
+            <Button
                 android:id="@+id/dashboard_btn_map"
                 style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="match_parent"

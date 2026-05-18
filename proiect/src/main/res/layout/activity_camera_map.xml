@@ -90,6 +90,22 @@
                         android:checked="true"
                         android:text="@string/map_show_lines" />
 
+                    <Switch
+                        android:id="@+id/map_switch_names"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:checked="false"
+                        android:text="@string/map_show_names" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal"
+                    android:gravity="end">
+
                     <Button
                         android:id="@+id/map_btn_clear"
                         style="?attr/materialButtonOutlinedStyle"

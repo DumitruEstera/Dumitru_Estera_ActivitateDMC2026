@@ -39,8 +39,11 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.text.SimpleDateFormat;
+import java.text.ParsePosition;
 
 public class AlarmsListActivity extends AppCompatActivity {
 
@@ -58,14 +61,12 @@ public class AlarmsListActivity extends AppCompatActivity {
     private TextView emptyView;
     private ProgressBar progress;
     private SwipeRefreshLayout swipe;
-
     private AlarmAdapter adapter;
     private final List<Alarm> alarms = new ArrayList<>();
-
     private PrefsManager prefs;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-
+    private volatile ApiClient activeClient;
     private String selectedDate;
     private int selectedHour = -1;
     private boolean spinnersInitialized = false;
@@ -82,11 +83,14 @@ public class AlarmsListActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_alarms_list);
 
+        // Configurarea toolbar-ului
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
+            // Seteaza iconita de back pe toolbar
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        // Se inchide activitatea la apasarea butonului de back de pe toolbar
         toolbar.setNavigationOnClickListener(v -> finish());
 
         statusSpinner = findViewById(R.id.alarms_filter_status);
@@ -105,10 +109,12 @@ public class AlarmsListActivity extends AppCompatActivity {
         setupSpinner(typeSpinner, R.array.alarms_type_labels);
         setupSpinner(severitySpinner, R.array.alarms_severity_labels);
 
+        // Selectam in spinnere valorile salvate anterior in preferinte
         statusSpinner.setSelection(indexOf(STATUS_VALUES, prefs.getFilterStatus()));
         typeSpinner.setSelection(indexOf(TYPE_VALUES, prefs.getFilterType()));
         severitySpinner.setSelection(indexOf(SEVERITY_VALUES, prefs.getFilterSeverity()));
 
+        // Cand utilizatorul schimba un filtru, salvam noile valori si reincarcam alarmele
         AdapterView.OnItemSelectedListener filterListener =
                 new AdapterView.OnItemSelectedListener() {
                     @Override
@@ -125,13 +131,17 @@ public class AlarmsListActivity extends AppCompatActivity {
                     @Override
                     public void onNothingSelected(AdapterView<?> parent) { }
                 };
-        statusSpinner.setOnItemSelectedListener(filterListener);
-        typeSpinner.setOnItemSelectedListener(filterListener);
-        severitySpinner.setOnItemSelectedListener(filterListener);
-        spinnersInitialized = true;
+
+        statusSpinner.post(() -> {
+            statusSpinner.setOnItemSelectedListener(filterListener);
+            typeSpinner.setOnItemSelectedListener(filterListener);
+            severitySpinner.setOnItemSelectedListener(filterListener);
+            spinnersInitialized = true;
+        });
 
         adapter = new AlarmAdapter(this, alarms);
         listView.setAdapter(adapter);
+        // La click pe o alarma, deschidem ecranul cu detaliile acelei alarme
         listView.setOnItemClickListener((parent, view, position, id) -> {
             Alarm a = adapter.getItem(position);
             if (a != null) openAlarmDetail(a.getId());
@@ -148,8 +158,6 @@ public class AlarmsListActivity extends AppCompatActivity {
         });
 
         swipe.setOnRefreshListener(this::loadAlarms);
-
-        loadAlarms();
     }
 
     private void setupSpinner(Spinner spinner, int arrayRes) {
@@ -168,6 +176,7 @@ public class AlarmsListActivity extends AppCompatActivity {
         Calendar c = Calendar.getInstance();
         DatePickerDialog dialog = new DatePickerDialog(this,
                 (view, year, month, day) -> {
+                    // Construim data in format yyyy-MM-dd (lunile incep de la 0 in Calendar)
                     selectedDate = String.format(Locale.US, "%04d-%02d-%02d",
                             year, month + 1, day);
                     updateDateTimeLabel();
@@ -212,7 +221,6 @@ public class AlarmsListActivity extends AppCompatActivity {
         dateLabel.setText(text);
         clearDateButton.setVisibility(View.VISIBLE);
     }
-
     private void openAlarmDetail(int alarmId) {
         Intent intent = new Intent(this, AlarmDetailActivity.class);
         intent.putExtra(AlarmDetailActivity.EXTRA_ALARM_ID, alarmId);
@@ -228,17 +236,46 @@ public class AlarmsListActivity extends AppCompatActivity {
         final String url = buildUrl();
         final String baseUrl = prefs.getServerUrl();
         final String token = prefs.getAuthToken();
+        final boolean dateFilterActive = selectedDate != null;
+        final long fromMs;
+        final long toMs;
+        if (dateFilterActive) {
+            String[] parts = selectedDate.split("-");
+            int year = Integer.parseInt(parts[0]);
+            int month = Integer.parseInt(parts[1]) - 1;
+            int day = Integer.parseInt(parts[2]);
+            Calendar c = Calendar.getInstance();
+            c.set(Calendar.MILLISECOND, 0);
+            if (selectedHour >= 0) {
+                c.set(year, month, day, selectedHour, 0, 0);
+                fromMs = c.getTimeInMillis();
+                toMs = fromMs + 3_600_000L;
+            } else {
+                c.set(year, month, day, 0, 0, 0);
+                fromMs = c.getTimeInMillis();
+                toMs = fromMs + 86_400_000L;
+            }
+        } else {
+            fromMs = 0L;
+            toMs = 0L;
+        }
 
         final DatabaseHelper db = DatabaseHelper.get(this);
 
         executor.execute(() -> {
             ApiClient client = new ApiClient(baseUrl, token);
+            activeClient = client;
             try {
                 ApiClient.ApiResponse resp = client.get(url);
                 final List<Alarm> parsed = new ArrayList<>();
                 if (resp.isSuccess()) {
                     parsed.addAll(parseAlarmsList(resp.body));
-                    db.replaceAlarms(parsed);
+                    if (!dateFilterActive) {
+                        db.replaceAlarms(parsed);
+                    }
+                    if (dateFilterActive) {
+                        filterByDate(parsed, fromMs, toMs);
+                    }
                 }
                 final boolean ok = resp.isSuccess();
                 final int code = resp.code;
@@ -255,11 +292,11 @@ public class AlarmsListActivity extends AppCompatActivity {
                     adapter.setAlarms(alarms);
                     emptyView.setVisibility(alarms.isEmpty() ? View.VISIBLE : View.GONE);
                 });
-            } catch (Exception e) {
+            } catch (java.io.IOException e) {
                 final String msg = e.getMessage();
                 final List<Alarm> cached = db.getAllAlarms();
                 mainHandler.post(() -> {
-                    if (isFinishing()) return;
+                    if (!Session.isAlive(this)) return;
                     progress.setVisibility(View.GONE);
                     swipe.setRefreshing(false);
                     Toast.makeText(this,
@@ -268,6 +305,18 @@ public class AlarmsListActivity extends AppCompatActivity {
                     alarms.clear();
                     alarms.addAll(cached);
                     adapter.setAlarms(alarms);
+                    emptyView.setVisibility(alarms.isEmpty() ? View.VISIBLE : View.GONE);
+                });
+            } catch (Exception e) {
+                final String msg = e.getMessage();
+                mainHandler.post(() -> {
+                    if (!Session.isAlive(this)) return;
+                    progress.setVisibility(View.GONE);
+                    swipe.setRefreshing(false);
+                    Toast.makeText(this,
+                            getString(R.string.alarms_load_failed_fmt, 0)
+                                    + (msg == null ? "" : (": " + msg)),
+                            Toast.LENGTH_LONG).show();
                     emptyView.setVisibility(alarms.isEmpty() ? View.VISIBLE : View.GONE);
                 });
             }
@@ -279,19 +328,59 @@ public class AlarmsListActivity extends AppCompatActivity {
         appendFilter(sb, "status", STATUS_VALUES.get(statusSpinner.getSelectedItemPosition()));
         appendFilter(sb, "type", TYPE_VALUES.get(typeSpinner.getSelectedItemPosition()));
         appendFilter(sb, "severity", SEVERITY_VALUES.get(severitySpinner.getSelectedItemPosition()));
-        if (selectedDate != null) {
-            String from, to;
-            if (selectedHour >= 0) {
-                from = String.format(Locale.US, "%sT%02d:00:00", selectedDate, selectedHour);
-                to = String.format(Locale.US, "%sT%02d:59:59", selectedDate, selectedHour);
-            } else {
-                from = selectedDate + "T00:00:00";
-                to = selectedDate + "T23:59:59";
-            }
-            sb.append("&date_from=").append(encode(from));
-            sb.append("&date_to=").append(encode(to));
-        }
         return sb.toString();
+    }
+
+    private static void filterByDate(List<Alarm> list, long fromMs, long toMs) {
+        // Iteram invers ca sa putem elimina elemente fara probleme de indexare
+        for (int i = list.size() - 1; i >= 0; i--) {
+            long ts = parseTimestampMs(list.get(i).getCreatedAt());
+            if (ts == Long.MIN_VALUE || ts < fromMs || ts >= toMs) {
+                list.remove(i);
+            }
+        }
+    }
+
+    private static long parseTimestampMs(String s) {
+        if (s == null || s.isEmpty()) return Long.MIN_VALUE;
+        String normalized = s.trim();
+        int dot = normalized.indexOf('.');
+        if (dot > 0) {
+            int end = dot + 1;
+            while (end < normalized.length() && Character.isDigit(normalized.charAt(end))) end++;
+            normalized = normalized.substring(0, dot) + normalized.substring(end);
+        }
+        boolean hasZ = normalized.endsWith("Z");
+        if (hasZ) normalized = normalized.substring(0, normalized.length() - 1);
+
+        boolean hasOffset = false;
+        if (normalized.length() >= 6) {
+            char c5 = normalized.charAt(normalized.length() - 6);
+            char c3 = normalized.charAt(normalized.length() - 3);
+            if ((c5 == '+' || c5 == '-') && c3 == ':') hasOffset = true;
+        }
+
+        String[] patterns;
+        TimeZone tz;
+        if (hasZ) {
+            patterns = new String[] { "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss" };
+            tz = TimeZone.getTimeZone("UTC");
+        } else if (hasOffset) {
+            patterns = new String[] { "yyyy-MM-dd'T'HH:mm:ssXXX", "yyyy-MM-dd HH:mm:ssXXX" };
+            tz = null;
+        } else {
+            patterns = new String[] { "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd HH:mm:ss" };
+            tz = null;
+        }
+        for (String p : patterns) {
+            SimpleDateFormat f = new SimpleDateFormat(p, Locale.US);
+            if (tz != null) f.setTimeZone(tz);
+            f.setLenient(false);
+            ParsePosition pp = new ParsePosition(0);
+            java.util.Date d = f.parse(normalized, pp);
+            if (d != null) return d.getTime();
+        }
+        return Long.MIN_VALUE;
     }
 
     private static void appendFilter(StringBuilder sb, String key, String value) {
@@ -338,6 +427,8 @@ public class AlarmsListActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        ApiClient c = activeClient;
+        if (c != null) c.cancel();
         executor.shutdownNow();
     }
 }

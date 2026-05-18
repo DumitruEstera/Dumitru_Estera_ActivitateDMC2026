@@ -11,14 +11,22 @@ public class AccessLogEntry {
 
     public static AccessLogEntry fromJson(JSONObject json) throws JSONException {
         AccessLogEntry e = new AccessLogEntry();
-        e.timestamp = json.optString("timestamp",
-                json.optString("created_at", ""));
-        e.cameraId = json.optString("camera_id",
-                json.optString("camera", ""));
-        e.status = json.optString("status",
-                json.optString("access_status", ""));
+        e.timestamp = firstNonNullString(json, "detected_at", "timestamp", "created_at");
+        e.cameraId = firstNonNullString(json, "camera_id", "camera");
+        String status = firstNonNullString(json, "status", "access_status");
+        e.status = status.isEmpty() ? "authorized" : status;
         e.confidence = json.optDouble("confidence", 0.0);
         return e;
+    }
+
+    private static String firstNonNullString(JSONObject json, String... keys) {
+        for (String k : keys) {
+            if (json.has(k) && !json.isNull(k)) {
+                String v = json.optString(k, "");
+                if (!v.isEmpty()) return v;
+            }
+        }
+        return "";
     }
 
     public String getTimestamp() { return timestamp; }

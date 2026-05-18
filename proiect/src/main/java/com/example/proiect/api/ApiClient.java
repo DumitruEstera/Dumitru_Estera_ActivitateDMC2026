@@ -33,10 +33,20 @@ public class ApiClient {
 
     private final String baseUrl;
     private final String token;
+    private volatile HttpURLConnection currentConn;
+    private volatile boolean canceled;
 
     public ApiClient(String baseUrl, String token) {
         this.baseUrl = baseUrl == null ? "" : baseUrl.replaceAll("/+$", "");
         this.token = token;
+    }
+
+    public void cancel() {
+        canceled = true;
+        HttpURLConnection c = currentConn;
+        if (c != null) {
+            try { c.disconnect(); } catch (Exception ignored) { }
+        }
     }
 
     public ApiResponse post(String path, JSONObject body) throws Exception {
@@ -56,8 +66,10 @@ public class ApiClient {
     }
 
     private ApiResponse request(String method, String path, JSONObject body) throws Exception {
+        if (canceled) throw new java.io.InterruptedIOException("canceled");
         URL url = new URL(baseUrl + path);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        currentConn = conn;
         try {
             conn.setConnectTimeout(15000);
             conn.setReadTimeout(15000);
@@ -97,6 +109,7 @@ public class ApiClient {
             String responseBody = readStream(is);
             return new ApiResponse(code, responseBody);
         } finally {
+            currentConn = null;
             conn.disconnect();
         }
     }

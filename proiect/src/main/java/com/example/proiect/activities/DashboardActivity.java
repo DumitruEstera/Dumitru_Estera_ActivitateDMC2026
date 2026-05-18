@@ -44,6 +44,7 @@ public class DashboardActivity extends AppCompatActivity {
 
     private final ExecutorService executor = Executors.newFixedThreadPool(4);
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private volatile ApiClient activeClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +94,7 @@ public class DashboardActivity extends AppCompatActivity {
     private void wireNavigation() {
         Button btnAlarms = findViewById(R.id.dashboard_btn_alarms);
         Button btnPersons = findViewById(R.id.dashboard_btn_persons);
+        Button btnLive = findViewById(R.id.dashboard_btn_live);
         Button btnMap = findViewById(R.id.dashboard_btn_map);
         Button btnStats = findViewById(R.id.dashboard_btn_stats);
         Button btnSettings = findViewById(R.id.dashboard_btn_settings);
@@ -104,6 +106,8 @@ public class DashboardActivity extends AppCompatActivity {
                 startActivity(new Intent(this, AlarmsListActivity.class)));
         btnPersons.setOnClickListener(v ->
                 startActivity(new Intent(this, PersonsListActivity.class)));
+        btnLive.setOnClickListener(v ->
+                startActivity(new Intent(this, CameraStreamActivity.class)));
         btnMap.setOnClickListener(v ->
                 startActivity(new Intent(this, CameraMapActivity.class)));
         btnStats.setOnClickListener(v ->
@@ -124,8 +128,12 @@ public class DashboardActivity extends AppCompatActivity {
         final String baseUrl = prefs.getServerUrl();
         final String token = prefs.getAuthToken();
 
+        final int[] alarmsKpi = { -1, -1 };
+        final boolean[] alarmsKpiLoaded = { false };
+
         executor.execute(() -> {
             ApiClient client = new ApiClient(baseUrl, token);
+            activeClient = client;
             try {
                 ApiClient.ApiResponse alarmsStats = client.get("/api/alarms/stats");
                 final int unresolved;
@@ -133,7 +141,10 @@ public class DashboardActivity extends AppCompatActivity {
                 if (alarmsStats.isSuccess()) {
                     JSONObject j = alarmsStats.asJson();
                     unresolved = readInt(j, "unresolved", "unresolved_count", "open");
-                    critical = readInt(j, "critical", "critical_count");
+                    critical = readInt(j, "critical_unresolved", "critical", "critical_count");
+                    alarmsKpi[0] = unresolved;
+                    alarmsKpi[1] = critical;
+                    alarmsKpiLoaded[0] = true;
                 } else {
                     unresolved = -1;
                     critical = -1;
@@ -144,6 +155,7 @@ public class DashboardActivity extends AppCompatActivity {
                 });
             } catch (Exception e) {
                 mainHandler.post(() -> {
+                    if (!Session.isAlive(this)) return;
                     kpiUnresolved.setText("—");
                     kpiCritical.setText("—");
                 });
@@ -154,30 +166,51 @@ public class DashboardActivity extends AppCompatActivity {
                 final int total;
                 if (logsStats.isSuccess()) {
                     JSONObject j = logsStats.asJson();
-                    total = readInt(j, "total", "total_count", "count", "detections");
+                    total = readInt(j, "total_recent", "total", "total_count", "count", "detections");
                 } else {
                     total = -1;
                 }
                 Session.postOrAuth(mainHandler, this, logsStats.code,
                         () -> kpiDetections.setText(formatCount(total)));
             } catch (Exception e) {
-                mainHandler.post(() -> kpiDetections.setText("—"));
+                mainHandler.post(() -> {
+                    if (!Session.isAlive(this)) return;
+                    kpiDetections.setText("—");
+                });
             }
 
             try {
                 ApiClient.ApiResponse stats = client.get("/api/statistics");
                 final int persons;
+                final int fallbackUnresolved;
+                final int fallbackCritical;
                 if (stats.isSuccess()) {
                     JSONObject j = stats.asJson();
-                    persons = readInt(j, "registered_persons", "total_persons",
+                    persons = readInt(j, "total_persons", "registered_persons",
                             "persons", "person_count");
+                    fallbackUnresolved = readInt(j, "unresolved_alarms");
+                    fallbackCritical = readInt(j, "critical_alarms");
                 } else {
                     persons = -1;
+                    fallbackUnresolved = -1;
+                    fallbackCritical = -1;
                 }
-                Session.postOrAuth(mainHandler, this, stats.code,
-                        () -> kpiPersons.setText(formatCount(persons)));
+                Session.postOrAuth(mainHandler, this, stats.code, () -> {
+                    kpiPersons.setText(formatCount(persons));
+                    if (!alarmsKpiLoaded[0]) {
+                        if (fallbackUnresolved >= 0) {
+                            kpiUnresolved.setText(formatCount(fallbackUnresolved));
+                        }
+                        if (fallbackCritical >= 0) {
+                            kpiCritical.setText(formatCount(fallbackCritical));
+                        }
+                    }
+                });
             } catch (Exception e) {
-                mainHandler.post(() -> kpiPersons.setText("—"));
+                mainHandler.post(() -> {
+                    if (!Session.isAlive(this)) return;
+                    kpiPersons.setText("—");
+                });
             }
 
             try {
@@ -196,6 +229,7 @@ public class DashboardActivity extends AppCompatActivity {
                 });
             } catch (Exception e) {
                 mainHandler.post(() -> {
+                    if (!Session.isAlive(this)) return;
                     recentEmpty.setVisibility(View.VISIBLE);
                     progress.setVisibility(View.GONE);
                 });
@@ -252,6 +286,8 @@ public class DashboardActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        ApiClient c = activeClient;
+        if (c != null) c.cancel();
         executor.shutdownNow();
     }
 }

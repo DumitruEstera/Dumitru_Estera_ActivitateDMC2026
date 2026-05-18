@@ -30,10 +30,7 @@ import com.example.proiect.utils.Session;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -58,6 +55,7 @@ public class StatisticsActivity extends AppCompatActivity {
     private PrefsManager prefs;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private volatile ApiClient activeClient;
 
     private int selectedHours = 24;
     @Nullable private String selectedDate;
@@ -129,6 +127,7 @@ public class StatisticsActivity extends AppCompatActivity {
 
         executor.execute(() -> {
             ApiClient client = new ApiClient(baseUrl, token);
+            activeClient = client;
             int authCode = 200;
 
             long totalDetections = -1;
@@ -139,45 +138,58 @@ public class StatisticsActivity extends AppCompatActivity {
             List<BarChartView.Bar> barEntries = new ArrayList<>();
             List<PieChartView.Slice> pieSlices = new ArrayList<>();
 
-            String dateFilter = (date == null)
-                    ? "hours=" + hours
-                    : "date_from=" + encode(date + "T00:00:00")
-                            + "&date_to=" + encode(date + "T23:59:59");
+            int effectiveHours = (date == null) ? hours : hoursSinceStartOfDay(date);
+            String hoursParam = "hours=" + effectiveHours;
 
             try {
-                ApiClient.ApiResponse r = client.get("/api/logs/stats?" + dateFilter);
+                ApiClient.ApiResponse r = client.get("/api/logs/stats?" + hoursParam);
                 if (r.isSuccess()) {
                     JSONObject j = r.asJson();
-                    totalDetections = j.optLong("total",
-                            j.optLong("total_count", j.optLong("count", -1)));
-                    topCamera = j.optString("most_active_camera",
-                            j.optString("top_camera", null));
-                    topType = j.optString("most_common_type",
-                            j.optString("top_type", null));
+                    totalDetections = j.optLong("total_recent",
+                            j.optLong("total",
+                                    j.optLong("total_count", j.optLong("count", -1))));
                 } else if (r.code == 401) authCode = 401;
             } catch (Exception ignored) { }
 
             try {
-                ApiClient.ApiResponse r = client.get("/api/alarms/stats?" + dateFilter);
+                ApiClient.ApiResponse r = client.get("/api/alarms/stats");
                 if (r.isSuccess()) {
                     JSONObject j = r.asJson();
-                    totalAlarms = j.optInt("total",
-                            j.optInt("total_count", j.optInt("count", -1)));
-                } else if (r.code == 401) authCode = 401;
+                    if (j.has("total") || j.has("total_count") || j.has("count")) {
+                        totalAlarms = j.optInt("total",
+                                j.optInt("total_count", j.optInt("count", -1)));
+                    } else {
+                        int unresolved = j.optInt("unresolved", 0);
+                        int resolved = j.optInt("resolved", 0);
+                        int falseAlarm = j.optInt("false_alarm", 0);
+                        totalAlarms = unresolved + resolved + falseAlarm;
+                    }
+                } else if (r.code == 401) {
+                    authCode = 401;
+                } else {
+                    try {
+                        ApiClient.ApiResponse s = client.get("/api/statistics");
+                        if (s.isSuccess()) {
+                            totalAlarms = s.asJson().optInt("total_alarms", -1);
+                        }
+                    } catch (Exception ignored) { }
+                }
             } catch (Exception ignored) { }
 
             try {
-                ApiClient.ApiResponse r = client.get("/api/logs/timeseries?" + dateFilter);
+                ApiClient.ApiResponse r = client.get("/api/logs/timeseries?" + hoursParam);
                 if (r.isSuccess()) linePoints = parseTimeseries(r.body);
                 else if (r.code == 401) authCode = 401;
             } catch (Exception ignored) { }
 
             try {
-                ApiClient.ApiResponse r = client.get("/api/logs/breakdown?" + dateFilter);
+                ApiClient.ApiResponse r = client.get("/api/logs/breakdown?" + hoursParam);
                 if (r.isSuccess()) {
                     JSONObject j = r.asJson();
                     barEntries = parseByCamera(j);
                     pieSlices = parseByType(j);
+                    if (!barEntries.isEmpty()) topCamera = barEntries.get(0).label;
+                    if (!pieSlices.isEmpty()) topType = pieSlices.get(0).label;
                 } else if (r.code == 401) authCode = 401;
             } catch (Exception ignored) { }
 
@@ -205,12 +217,28 @@ public class StatisticsActivity extends AppCompatActivity {
 
     private static boolean isBlank(String s) { return s == null || s.isEmpty(); }
 
-    private static String encode(String s) {
-        try { return URLEncoder.encode(s, StandardCharsets.UTF_8.name()); }
-        catch (Exception e) { return s; }
+    private static int hoursSinceStartOfDay(String yyyyMmDd) {
+        try {
+            String[] parts = yyyyMmDd.split("-");
+            if (parts.length != 3) return 24;
+            int year = Integer.parseInt(parts[0]);
+            int month = Integer.parseInt(parts[1]) - 1;
+            int day = Integer.parseInt(parts[2]);
+            Calendar c = Calendar.getInstance();
+            c.set(year, month, day, 0, 0, 0);
+            c.set(Calendar.MILLISECOND, 0);
+            long startMs = c.getTimeInMillis();
+            long nowMs = System.currentTimeMillis();
+            long endOfDayMs = startMs + 24L * 3_600_000L;
+            long windowMs = Math.min(nowMs, endOfDayMs) - startMs;
+            if (windowMs <= 0) return 24;
+            return Math.max(1, Math.min(24, (int) Math.ceil(windowMs / 3_600_000.0)));
+        } catch (Exception e) {
+            return 24;
+        }
     }
 
-    private static List<LineChartView.Point> parseTimeseries(String body) {
+private static List<LineChartView.Point> parseTimeseries(String body) {
         List<LineChartView.Point> out = new ArrayList<>();
         try {
             JSONArray arr = arrayFrom(body, "series", "data", "buckets");
@@ -218,9 +246,10 @@ public class StatisticsActivity extends AppCompatActivity {
             for (int i = 0; i < arr.length(); i++) {
                 JSONObject o = arr.optJSONObject(i);
                 if (o == null) continue;
-                String label = o.optString("label",
-                        o.optString("timestamp",
-                                o.optString("bucket", "")));
+                String label = o.optString("ts",
+                        o.optString("label",
+                                o.optString("timestamp",
+                                        o.optString("bucket", ""))));
                 double v = o.optDouble("count",
                         o.optDouble("value", o.optDouble("total", 0)));
                 out.add(new LineChartView.Point(shortenTimeLabel(label), v));
@@ -301,6 +330,8 @@ public class StatisticsActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        ApiClient c = activeClient;
+        if (c != null) c.cancel();
         executor.shutdownNow();
     }
 }

@@ -1,7 +1,12 @@
 package com.example.proiect.activities;
 
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.text.InputType;
 import android.widget.Button;
@@ -54,6 +59,7 @@ public class CameraMapActivity extends AppCompatActivity implements OnMapReadyCa
     private MaterialButtonToggleGroup modeGroup;
     private TextView hintText;
     private Switch showLinesSwitch;
+    private Switch showNamesSwitch;
     private Button clearBtn;
 
     private Mode currentMode = Mode.ADD;
@@ -90,6 +96,7 @@ public class CameraMapActivity extends AppCompatActivity implements OnMapReadyCa
         modeGroup = findViewById(R.id.map_mode_group);
         hintText = findViewById(R.id.map_hint);
         showLinesSwitch = findViewById(R.id.map_switch_lines);
+        showNamesSwitch = findViewById(R.id.map_switch_names);
         clearBtn = findViewById(R.id.map_btn_clear);
 
         db = DatabaseHelper.get(this);
@@ -105,6 +112,7 @@ public class CameraMapActivity extends AppCompatActivity implements OnMapReadyCa
         });
 
         showLinesSwitch.setOnCheckedChangeListener((b, checked) -> applyLineVisibility(checked));
+        showNamesSwitch.setOnCheckedChangeListener((b, checked) -> refreshAllMarkerIcons());
         clearBtn.setOnClickListener(v -> confirmClearAll());
 
         SupportMapFragment frag = (SupportMapFragment)
@@ -232,9 +240,92 @@ public class CameraMapActivity extends AppCompatActivity implements OnMapReadyCa
     }
 
     private void setMarkerSelected(long pinId, boolean selected) {
+        applyMarkerIcon(pinId, selected);
+    }
+
+    private void applyMarkerIcon(long pinId, boolean selected) {
         Marker m = markersByPinId.get(pinId);
-        if (m == null) return;
-        m.setIcon(BitmapDescriptorFactory.defaultMarker(selected ? HUE_SELECTED : HUE_NORMAL));
+        MapPin pin = findPin(pinId);
+        if (m == null || pin == null) return;
+        if (showNamesSwitch != null && showNamesSwitch.isChecked()) {
+            m.setIcon(BitmapDescriptorFactory.fromBitmap(buildLabeledMarker(pin.getLabel(), selected)));
+        } else {
+            m.setIcon(BitmapDescriptorFactory.defaultMarker(selected ? HUE_SELECTED : HUE_NORMAL));
+        }
+        m.setAnchor(0.5f, 1.0f);
+    }
+
+    private void refreshAllMarkerIcons() {
+        for (MapPin pin : pins) {
+            boolean sel = selectedPinIds.contains(pin.getId());
+            applyMarkerIcon(pin.getId(), sel);
+        }
+    }
+
+    private Bitmap buildLabeledMarker(String rawLabel, boolean selected) {
+        float d = getResources().getDisplayMetrics().density;
+        String label = rawLabel == null ? "" : rawLabel;
+        if (label.length() > 22) label = label.substring(0, 21) + "…";
+
+        int pinColor = selected ? Color.parseColor("#F9A825") : Color.parseColor("#1976D2");
+
+        Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        textPaint.setTextSize(12f * d);
+        textPaint.setColor(Color.BLACK);
+        textPaint.setTextAlign(Paint.Align.CENTER);
+
+        float textW = textPaint.measureText(label);
+        Paint.FontMetrics fm = textPaint.getFontMetrics();
+        float textH = fm.descent - fm.ascent;
+
+        float hPad = 8f * d;
+        float vPad = 4f * d;
+        float gap = 3f * d;
+        float circleR = 8f * d;
+        float tipH = 7f * d;
+        float corner = 6f * d;
+
+        int labelW = (int) Math.ceil(textW + 2 * hPad);
+        int labelH = (int) Math.ceil(textH + 2 * vPad);
+        int width = Math.max(labelW, (int) Math.ceil(circleR * 2)) + 2;
+        int height = (int) Math.ceil(labelH + gap + circleR * 2 + tipH);
+
+        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(bmp);
+
+        Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        bgPaint.setColor(Color.WHITE);
+        Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        borderPaint.setStyle(Paint.Style.STROKE);
+        borderPaint.setStrokeWidth(1.5f * d);
+        borderPaint.setColor(pinColor);
+
+        float lx = (width - labelW) / 2f;
+        RectF labelRect = new RectF(lx, 0, lx + labelW, labelH);
+        c.drawRoundRect(labelRect, corner, corner, bgPaint);
+        c.drawRoundRect(labelRect, corner, corner, borderPaint);
+
+        float textY = labelH / 2f - (fm.ascent + fm.descent) / 2f;
+        c.drawText(label, width / 2f, textY, textPaint);
+
+        Paint pinPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        pinPaint.setColor(pinColor);
+        float cx = width / 2f;
+        float cy = labelH + gap + circleR;
+        c.drawCircle(cx, cy, circleR, pinPaint);
+
+        Path tip = new Path();
+        tip.moveTo(cx - circleR * 0.6f, cy + circleR * 0.4f);
+        tip.lineTo(cx + circleR * 0.6f, cy + circleR * 0.4f);
+        tip.lineTo(cx, cy + circleR + tipH);
+        tip.close();
+        c.drawPath(tip, pinPaint);
+
+        Paint dotPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        dotPaint.setColor(Color.WHITE);
+        c.drawCircle(cx, cy, circleR * 0.35f, dotPaint);
+
+        return bmp;
     }
 
     // ---------- Visibility ----------
@@ -388,6 +479,7 @@ public class CameraMapActivity extends AppCompatActivity implements OnMapReadyCa
         if (m != null) {
             m.setTag(pin.getId());
             markersByPinId.put(pin.getId(), m);
+            applyMarkerIcon(pin.getId(), selectedPinIds.contains(pin.getId()));
         }
     }
 

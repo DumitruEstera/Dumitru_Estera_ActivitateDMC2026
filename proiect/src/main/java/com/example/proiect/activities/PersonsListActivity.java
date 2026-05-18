@@ -92,6 +92,7 @@ public class PersonsListActivity extends AppCompatActivity {
             if (p != null) openPersonDetail(p.getId());
         });
 
+        // pentru search-as-you-type
         searchInput.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) { }
             @Override public void onTextChanged(CharSequence s, int a, int b, int c) { }
@@ -149,22 +150,26 @@ public class PersonsListActivity extends AppCompatActivity {
                 if (personsResp.isSuccess()) {
                     loaded.addAll(parsePersonsList(personsResp.body));
                     db.replacePersons(loaded);
+                } else if (personsResp.code == 401 || personsResp.code == 403) {
+                    error = getString(R.string.persons_admin_required);
+                    authCode = personsResp.code;
                 } else {
                     error = "Failed to load persons (HTTP " + personsResp.code + ")";
-                    if (personsResp.code == 401) authCode = 401;
                 }
-            } catch (Exception e) {
+            } catch (java.io.IOException e) {
                 error = "Offline — showing cached data";
                 networkFailed = true;
                 loaded.addAll(db.getAllPersons());
+            } catch (Exception e) {
+                error = "Invalid response: " + e.getMessage();
             }
 
             try {
-                ApiClient.ApiResponse deptResp = client.get("/api/departments");
+                ApiClient.ApiResponse deptResp = client.get("/api/persons/departments");
                 if (deptResp.isSuccess()) {
                     depts.addAll(parseDepartmentsList(deptResp.body));
-                } else if (deptResp.code == 401) {
-                    authCode = 401;
+                } else if (deptResp.code == 401 || deptResp.code == 403) {
+                    if (authCode == 200) authCode = deptResp.code;
                 }
             } catch (Exception ignored) { }
 

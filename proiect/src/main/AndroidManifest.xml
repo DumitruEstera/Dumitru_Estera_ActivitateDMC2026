@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -19,7 +20,8 @@
 
         <activity
             android:name=".activities.LoginActivity"
-            android:exported="true">
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -53,6 +55,12 @@
             android:parentActivityName=".activities.PersonsListActivity" />
 
         <activity
+            android:name=".activities.CameraStreamActivity"
+            android:exported="false"
+            android:label="@string/live_title"
+            android:parentActivityName=".activities.DashboardActivity" />
+
+        <activity
             android:name=".activities.CameraMapActivity"
             android:exported="false"
             android:label="@string/map_title"
@@ -69,10 +77,6 @@
             android:exported="false"
             android:label="@string/settings_title"
             android:parentActivityName=".activities.DashboardActivity" />
-
-        <activity
-            android:name=".MainActivity"
-            android:exported="false" />
     </application>
 
 </manifest>

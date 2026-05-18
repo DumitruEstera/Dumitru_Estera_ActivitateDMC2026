@@ -442,8 +442,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public synchronized int countMapPins() {
+        return countTable(T_MAP_PINS);
+    }
+
+    public synchronized int countAlarms() {
+        return countTable(T_ALARMS);
+    }
+
+    public synchronized int countPersons() {
+        return countTable(T_PERSONS);
+    }
+
+    public synchronized int countAccessLogs() {
+        return countTable(T_LOGS);
+    }
+
+    private int countTable(String table) {
         SQLiteDatabase db = getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT COUNT(*) FROM " + T_MAP_PINS, null);
+        Cursor c = db.rawQuery("SELECT COUNT(*) FROM " + table, null);
         try {
             return c.moveToFirst() ? c.getInt(0) : 0;
         } finally { c.close(); }

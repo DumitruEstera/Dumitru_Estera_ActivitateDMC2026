@@ -10,8 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
@@ -46,8 +44,6 @@ public class PersonDetailActivity extends AppCompatActivity {
     public static final String EXTRA_PERSON_ID = "person_id";
 
     private TextView nameView, departmentView, employeeView, faceCountView, zonesView;
-    private CheckBox favoriteBox;
-    private Button mapButton;
     private ListView historyList;
     private TextView historyEmpty;
     private ProgressBar progress;
@@ -61,6 +57,7 @@ public class PersonDetailActivity extends AppCompatActivity {
     private PrefsManager prefs;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private volatile ApiClient activeClient;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -94,41 +91,15 @@ public class PersonDetailActivity extends AppCompatActivity {
         employeeView = findViewById(R.id.person_employee);
         faceCountView = findViewById(R.id.person_face_count);
         zonesView = findViewById(R.id.person_zones);
-        favoriteBox = findViewById(R.id.person_favorite);
-        mapButton = findViewById(R.id.person_btn_map);
         historyList = findViewById(R.id.person_history_list);
         historyEmpty = findViewById(R.id.person_history_empty);
         progress = findViewById(R.id.person_progress);
         scroll = findViewById(R.id.person_scroll);
 
-        final DatabaseHelper db = DatabaseHelper.get(this);
-        favoriteBox.setChecked(db.isPersonFavorite(personId));
-        favoriteBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            db.setPersonFavorite(personId, isChecked);
-            Toast.makeText(this,
-                    isChecked ? R.string.person_favorite_added
-                              : R.string.person_favorite_removed,
-                    Toast.LENGTH_SHORT).show();
-        });
-
-        mapButton.setOnClickListener(v -> openOnMap());
-
         historyAdapter = new AccessLogAdapter(this, history);
         historyList.setAdapter(historyAdapter);
 
         loadPerson();
-    }
-
-    private void openOnMap() {
-        if (currentPerson == null) return;
-        android.content.Intent intent = new android.content.Intent(this,
-                CameraMapActivity.class);
-        List<String> zones = currentPerson.getAuthorizedZones();
-        if (zones != null && !zones.isEmpty()) {
-            intent.putExtra(CameraMapActivity.EXTRA_FOCUS_ZONES,
-                    zones.toArray(new String[0]));
-        }
-        startActivity(intent);
     }
 
     private void loadPerson() {
@@ -139,10 +110,14 @@ public class PersonDetailActivity extends AppCompatActivity {
         executor.execute(() -> {
             try {
                 ApiClient client = new ApiClient(baseUrl, token);
+                activeClient = client;
                 ApiClient.ApiResponse resp = client.get("/api/persons/" + personId);
                 if (resp.isSuccess()) {
                     JSONObject json = resp.asJson();
-                    final Person person = Person.fromJson(json);
+                    JSONObject personObj = json.optJSONObject("person");
+                    final Person person = Person.fromJson(personObj != null ? personObj : json);
+                    person.setFaceCount(json.optInt("face_count", person.getFaceCount()));
+                    if (person.getId() <= 0) person.setId(personId);
                     final List<AccessLogEntry> logs = parseAccessHistory(json);
                     DatabaseHelper helper = DatabaseHelper.get(this);
                     helper.upsertPerson(person);
@@ -162,13 +137,13 @@ public class PersonDetailActivity extends AppCompatActivity {
                         finish();
                     });
                 }
-            } catch (Exception e) {
+            } catch (java.io.IOException e) {
                 final String msg = e.getMessage();
                 DatabaseHelper helper = DatabaseHelper.get(this);
                 final Person cached = findCachedPerson(helper, personId);
                 final List<AccessLogEntry> cachedLogs = helper.getAccessLogsFor(personId);
                 mainHandler.post(() -> {
-                    if (isFinishing()) return;
+                    if (!Session.isAlive(this)) return;
                     if (cached != null) {
                         currentPerson = cached;
                         renderPerson(cached, cachedLogs);
@@ -183,6 +158,16 @@ public class PersonDetailActivity extends AppCompatActivity {
                                 Toast.LENGTH_LONG).show();
                         finish();
                     }
+                });
+            } catch (Exception e) {
+                final String msg = e.getMessage();
+                mainHandler.post(() -> {
+                    if (!Session.isAlive(this)) return;
+                    showLoading(false);
+                    Toast.makeText(this,
+                            getString(R.string.alarms_network_error_fmt, msg),
+                            Toast.LENGTH_LONG).show();
+                    finish();
                 });
             }
         });
@@ -243,6 +228,8 @@ public class PersonDetailActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        ApiClient c = activeClient;
+        if (c != null) c.cancel();
         executor.shutdownNow();
     }
 
@@ -267,6 +254,7 @@ public class PersonDetailActivity extends AppCompatActivity {
                 h = new Holder();
                 h.timestamp = convertView.findViewById(R.id.access_timestamp);
                 h.camera = convertView.findViewById(R.id.access_camera);
+                h.confidence = convertView.findViewById(R.id.access_confidence);
                 h.status = convertView.findViewById(R.id.access_status);
                 convertView.setTag(h);
             } else {
@@ -277,6 +265,14 @@ public class PersonDetailActivity extends AppCompatActivity {
             String when = DateUtils.relative(e.getTimestamp());
             h.timestamp.setText(TextUtils.isEmpty(when) ? "—" : when);
             h.camera.setText(TextUtils.isEmpty(e.getCameraId()) ? "—" : e.getCameraId());
+
+            double conf = e.getConfidence();
+            if (conf > 0.0) {
+                h.confidence.setVisibility(View.VISIBLE);
+                h.confidence.setText(String.format(Locale.US, "%d%%", Math.round(conf * 100)));
+            } else {
+                h.confidence.setVisibility(View.GONE);
+            }
 
             String status = e.getStatus() == null ? "" : e.getStatus();
             h.status.setText(status.toUpperCase(Locale.US));
@@ -298,6 +294,7 @@ public class PersonDetailActivity extends AppCompatActivity {
         static class Holder {
             TextView timestamp;
             TextView camera;
+            TextView confidence;
             TextView status;
         }
     }

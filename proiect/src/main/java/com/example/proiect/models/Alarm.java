@@ -23,20 +23,25 @@ public class Alarm {
         a.id = json.optInt("id", 0);
         a.type = json.optString("type", "");
         a.severity = json.optString("severity", "");
-        a.description = json.optString("description", "");
+        a.description = optStringOrEmpty(json, "description");
         a.cameraId = json.optString("camera_id", "");
         a.status = json.optString("status", "");
-        a.notes = json.optString("notes", "");
+        a.notes = optStringOrEmpty(json, "notes");
         a.snapshot = json.optString("snapshot", null);
         a.createdAt = json.optString("created_at", "");
         a.resolvedAt = json.optString("resolved_at", "");
-        a.resolvedBy = json.optString("resolved_by", "");
-        if (json.has("metadata")) {
-            a.metadataJson = json.optJSONObject("metadata") != null
-                    ? json.getJSONObject("metadata").toString()
-                    : json.optString("metadata", "");
+        a.resolvedBy = optStringOrEmpty(json, "resolved_by");
+        JSONObject meta = json.optJSONObject("detection_metadata");
+        if (meta == null) meta = json.optJSONObject("metadata");
+        if (meta != null) {
+            a.metadataJson = meta.toString();
         }
         return a;
+    }
+
+    private static String optStringOrEmpty(JSONObject json, String key) {
+        if (json.isNull(key)) return "";
+        return json.optString(key, "");
     }
 
     public int getId() { return id; }

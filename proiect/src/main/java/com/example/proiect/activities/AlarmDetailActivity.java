@@ -17,7 +17,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RatingBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -52,7 +51,6 @@ public class AlarmDetailActivity extends AppCompatActivity {
     private LinearLayout metadataContainer;
     private View snapshotCard;
     private ImageView snapshotView;
-    private RatingBar ratingBar;
     private EditText notesInput;
     private Button btnSaveNotes, btnResolve, btnFalse;
     private ProgressBar progress;
@@ -100,7 +98,6 @@ public class AlarmDetailActivity extends AppCompatActivity {
         metadataContainer = findViewById(R.id.detail_metadata_container);
         snapshotCard = findViewById(R.id.detail_snapshot_card);
         snapshotView = findViewById(R.id.detail_snapshot);
-        ratingBar = findViewById(R.id.detail_rating);
         notesInput = findViewById(R.id.detail_notes);
         btnSaveNotes = findViewById(R.id.detail_btn_save_notes);
         btnResolve = findViewById(R.id.detail_btn_resolve);
@@ -109,15 +106,6 @@ public class AlarmDetailActivity extends AppCompatActivity {
         scroll = findViewById(R.id.detail_scroll);
 
         setTitle(getString(R.string.detail_title_fmt, alarmId));
-
-        final DatabaseHelper db = DatabaseHelper.get(this);
-        ratingBar.setRating(db.getAlarmRating(alarmId));
-        ratingBar.setOnRatingBarChangeListener((bar, rating, fromUser) -> {
-            if (fromUser) {
-                db.setAlarmRating(alarmId, (int) rating);
-                Toast.makeText(this, R.string.detail_rating_saved, Toast.LENGTH_SHORT).show();
-            }
-        });
 
         btnSaveNotes.setOnClickListener(v -> saveNotes());
         btnResolve.setOnClickListener(v -> updateStatus("resolved"));

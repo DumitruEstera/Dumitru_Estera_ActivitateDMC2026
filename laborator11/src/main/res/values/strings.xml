@@ -4,6 +4,12 @@
     <string name="label_value">Valoare</string>
     <string name="label_name">Eticheta</string>
     <string name="btn_show">Afiseaza graficul</string>
-    <string name="title_chart">Grafic PieChart</string>
+    <string name="title_chart">Grafic</string>
     <string name="error_invalid">Introduceti valori numerice pozitive!</string>
+
+    <string-array name="chart_types">
+        <item>PieChart</item>
+        <item>ColumnChart</item>
+        <item>BarChart</item>
+    </string-array>
 </resources>

@@ -10,8 +10,13 @@ import com.example.proiect.activities.LoginActivity;
 
 public class Session {
 
+    public static boolean isAlive(Activity activity) {
+        return activity != null && !activity.isFinishing() && !activity.isDestroyed();
+    }
+
     public static boolean handleUnauthorized(Activity activity, int httpCode) {
         if (httpCode != 401) return false;
+        if (!isAlive(activity)) return true;
 
         new PrefsManager(activity).clearLogin();
         Toast.makeText(activity, R.string.session_expired, Toast.LENGTH_LONG).show();
@@ -26,7 +31,7 @@ public class Session {
     public static void postOrAuth(Handler handler, Activity activity,
                                   int httpCode, Runnable onAuthorized) {
         handler.post(() -> {
-            if (activity.isFinishing()) return;
+            if (!isAlive(activity)) return;
             if (handleUnauthorized(activity, httpCode)) return;
             onAuthorized.run();
         });

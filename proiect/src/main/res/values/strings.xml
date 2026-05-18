@@ -48,9 +48,6 @@
     <string name="detail_no_description">(no description)</string>
     <string name="detail_snapshot_desc">Alarm snapshot</string>
     <string name="detail_metadata_header">Detection Metadata</string>
-    <string name="detail_rating_header">Local rating</string>
-    <string name="detail_rating_hint">Your assessment (saved on device)</string>
-    <string name="detail_rating_saved">Rating saved</string>
     <string name="detail_notes_header">Guard notes</string>
     <string name="detail_notes_hint">Add notes…</string>
     <string name="detail_save_notes">Save notes</string>
@@ -66,16 +63,13 @@
     <string name="persons_unknown_name">(unnamed)</string>
     <string name="persons_employee_fmt">ID: %1$s</string>
     <string name="persons_open_fmt">Person #%1$d — detail screen coming soon</string>
+    <string name="persons_admin_required">Admin privileges required to view persons.</string>
 
     <string name="person_invalid_id">Invalid person id</string>
     <string name="person_department_fmt">Department: %1$s</string>
     <string name="person_face_count_fmt">Face images registered: %1$d</string>
-    <string name="person_favorite_label">Favorite / Watch this person</string>
-    <string name="person_favorite_added">Added to favorites</string>
-    <string name="person_favorite_removed">Removed from favorites</string>
     <string name="person_zones_header">Authorized zones</string>
     <string name="person_zones_none">(none)</string>
-    <string name="person_btn_map">Show on Map</string>
     <string name="person_history_header">Recent access history</string>
     <string name="person_history_empty">No recent access events</string>
     <string name="person_map_coming_soon_fmt">Map coming soon — zones: %1$s</string>
@@ -94,6 +88,7 @@
     <string name="map_line_delete_title">Delete this line?</string>
     <string name="map_line_deleted">Line deleted</string>
     <string name="map_show_lines">Show lines</string>
+    <string name="map_show_names">Show names</string>
     <string name="map_mode_add">Add</string>
     <string name="map_mode_connect">Connect</string>
     <string name="map_mode_delete">Delete</string>
@@ -135,7 +130,6 @@
 
     <string name="settings_display">Display</string>
     <string name="settings_dark_mode">Dark mode</string>
-    <string name="settings_default_window">Default time window for statistics</string>
 
     <string name="settings_data">Data</string>
     <string name="settings_cache_info_fmt">Local cache: %1$d entries in SharedPreferences</string>
@@ -154,8 +148,21 @@
     <string name="settings_password_changed">Password updated</string>
     <string name="settings_password_failed_fmt">Could not change password: %1$s</string>
     <string name="settings_logout">Logout</string>
+    <string name="settings_server_url_label">Server URL</string>
+    <string name="settings_server_url_hint">http://192.168.1.5:8000</string>
+    <string name="settings_server_url_save">Save server URL</string>
+    <string name="settings_server_url_saved">Server URL saved</string>
+    <string name="settings_server_url_invalid">Enter a valid URL</string>
 
     <string name="settings_about">About</string>
     <string name="settings_version_fmt">Version %1$s</string>
     <string name="settings_about_blurb">SecurityGuard Mobile — Integrated Security System Companion</string>
+
+    <string name="live_title">Live Cameras</string>
+    <string name="dashboard_btn_live">Live Cameras</string>
+    <string name="live_status_connecting">Connecting…</string>
+    <string name="live_status_live">LIVE</string>
+    <string name="live_status_offline">Offline — retrying</string>
+    <string name="live_empty">No cameras streaming. Start one from the web dashboard.</string>
+    <string name="live_camera_frame_desc">Live camera frame</string>
 </resources>
